@@ -5,6 +5,9 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\EmployeeController;
 use App\Http\Controllers\ClientController;
 use App\Http\Controllers\SubcontractorController;
+use App\Http\Controllers\SiteController;
+use App\Http\Controllers\DailyReportController;
+use App\Http\Controllers\AttendanceController;
 
 Route::redirect('/', '/login');
 
@@ -22,6 +25,13 @@ Route::middleware('auth')->group(function () {
     Route::resource('clients', ClientController::class);
 
     Route::resource('subcontractors', SubcontractorController::class);
+
+    Route::resource('sites', SiteController::class);
+
+    Route::resource('daily-reports', DailyReportController::class);
+
+    Route::get('/attendance', [AttendanceController::class, 'index'])
+        ->name('attendance.index');
 });
 
 require __DIR__ . '/auth.php';

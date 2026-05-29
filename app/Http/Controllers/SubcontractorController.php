@@ -12,7 +12,7 @@ class SubcontractorController extends Controller
      */
     public function index()
     {
-        $subcontractors = Subcontractor::orderBy('name')->get();
+        $subcontractors = Subcontractor::orderBy('id')->get();
 
         return view('subcontractors.index', compact('subcontractors'));
     }

@@ -34,8 +34,29 @@
                     </x-slot>
 
                     <x-slot name="content">
+                        <x-dropdown-link :href="route('daily-reports.index')">
+                            日報管理
+                        </x-dropdown-link>
+                        <x-dropdown-link :href="route('attendance.index')">
+                            個人出勤簿
+                        </x-dropdown-link>
+                        <x-dropdown-link :href="route('sites.index')">
+                            現場管理
+                        </x-dropdown-link>
+                        
+                        <x-dropdown-link :href="route('employees.index')">
+                            従業員管理
+                        </x-dropdown-link>
+
+                        <x-dropdown-link :href="route('clients.index')">
+                            元請け管理
+                        </x-dropdown-link>
+
+                        <x-dropdown-link :href="route('subcontractors.index')">
+                            下請け管理
+                        </x-dropdown-link>
                         <x-dropdown-link :href="route('profile.edit')">
-                            {{ __('Profile') }}
+                            プロフィール変更
                         </x-dropdown-link>
 
                         <!-- Authentication -->
@@ -45,7 +66,7 @@
                             <x-dropdown-link :href="route('logout')"
                                     onclick="event.preventDefault();
                                                 this.closest('form').submit();">
-                                {{ __('Log Out') }}
+                                ログアウト
                             </x-dropdown-link>
                         </form>
                     </x-slot>

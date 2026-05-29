@@ -16,7 +16,8 @@
                 <label class="block mb-1">名前</label>
                 <input type="text"
                     name="name"
-                    class="w-full border rounded p-2">
+                    class="w-full border rounded p-2"
+                    value="{{ old('name', $client->name) }}">
             </div>
 
             @php

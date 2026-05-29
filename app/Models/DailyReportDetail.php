@@ -17,6 +17,7 @@ class DailyReportDetail extends Model
         'transportation_cost',
         'expressway_cost',
         'parking_cost',
+        'sales',
     ];
 
     public function dailyReport(): BelongsTo
