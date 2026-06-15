@@ -45,13 +45,9 @@
         {{-- 月選択 --}}
         <div class="mb-5">
 
-            <form method="GET"
-                class="flex items-center gap-3">
+            <form method="GET" class="flex items-center gap-3">
 
-                <input type="month"
-                    name="month"
-                    value="{{ $month->format('Y-m') }}"
-                    class="border rounded p-2">
+                <input type="month" name="month" value="{{ $month->format('Y-m') }}" class="border rounded p-2">
 
                 <button class="bg-gray-700 text-white px-4 py-2 rounded">
 
@@ -75,15 +71,21 @@
         @endif
 
         {{-- table --}}
-        <div class="overflow-x-auto">
+        <div class="overflow-auto max-h-[80vh] border">
 
             <table class="border-collapse border w-full">
 
                 <thead>
 
-                    <tr class="bg-gray-100">
+                    <tr>
 
-                        <th class="border p-2 sticky left-0 bg-gray-100 z-10 min-w-[100px]">
+                        <th class="
+    border p-2
+    sticky top-0 left-0
+    bg-gray-100
+    z-30
+    min-w-[100px]
+">
 
                             日付
 
@@ -91,7 +93,12 @@
 
                         @foreach($sites as $site)
 
-                        <th class="border p-2 whitespace-nowrap min-w-[120px]">
+                        <th class="
+    border p-2 whitespace-nowrap min-w-[120px]
+    sticky top-0
+    bg-gray-100
+    z-20
+">
 
                             {{ $site->name }}
 
@@ -113,11 +120,20 @@
                     @endif">
 
                         {{-- 日付 --}}
-                        <td class="border p-2 bg-gray-50 font-bold sticky left-0 @if($date->dayOfWeek === 0)
-                        text-red-600
-                        @elseif($date->dayOfWeek === 6)
-                        text-blue-600
-                        @endif">
+                        <td class="
+    border p-2
+    font-bold
+    sticky left-0
+    z-10
+
+    @if($date->dayOfWeek === 0)
+        bg-red-50 text-red-600
+    @elseif($date->dayOfWeek === 6)
+        bg-blue-50 text-blue-600
+    @else
+        bg-gray-50
+    @endif
+">
 
                             {{ $date->format('n/j') }}
 
@@ -140,8 +156,7 @@
 
                             @if($data)
 
-                            <a href="{{ route('daily-reports.show', $data['report']) }}"
-                                class="inline-flex items-center justify-center
+                            <a href="{{ route('daily-reports.show', $data['report']) }}" class="inline-flex items-center justify-center
                                                   w-10 h-10 rounded-full
                                                   bg-blue-600 hover:bg-blue-700
                                                   text-white font-bold">

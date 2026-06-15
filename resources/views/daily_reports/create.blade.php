@@ -119,6 +119,10 @@
                                 </th>
 
                                 <th class="border p-2">
+                                    備考
+                                </th>
+
+                                <th class="border p-2">
                                 </th>
 
                             </tr>
@@ -177,7 +181,7 @@
                                 <td class="border p-2">
 
                                     <input type="number"
-                                        step="0.25"
+                                        step="0.5"
                                         name="man_hours[]"
                                         class="w-24 border rounded p-2"
                                         value="1">
@@ -224,6 +228,14 @@
                                         value="0">
 
                                 </td>
+                                {{-- 備考 --}}
+                                <td class="border p-2">
+
+                                    <input type="text"
+                                        name="detail_note[]"
+                                        class="w-48 border rounded p-2">
+
+                                </td>
 
                                 {{-- 削除 --}}
                                 <td class="border p-2 text-center">
@@ -244,6 +256,19 @@
                     </table>
 
                 </div>
+
+            </div>
+
+            <div class="mt-5">
+
+                <label class="block mb-1 font-bold">
+                    全体備考
+                </label>
+
+                <textarea
+                    name="note"
+                    rows="3"
+                    class="w-full border rounded p-2"></textarea>
 
             </div>
 
@@ -278,9 +303,13 @@
                 // input初期化
                 newRow.querySelectorAll('input').forEach(input => {
 
-                    if (input.name.includes('man_hours')) {
+                    if (input.name === 'man_hours[]') {
 
                         input.value = 1;
+
+                    } else if (input.name === 'detail_note[]') {
+
+                        input.value = '';
 
                     } else {
 

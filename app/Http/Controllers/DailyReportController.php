@@ -144,6 +144,7 @@ class DailyReportController extends Controller
         $dailyReport = DailyReport::create([
             'site_id' => $request->site_id,
             'work_date' => $request->work_date,
+            'note' => $request->note,
         ]);
 
         foreach ($request->worker as $index => $worker) {
@@ -244,6 +245,8 @@ class DailyReportController extends Controller
                 'parking_cost' => $request->parking_cost[$index] ?? 0,
 
                 'sales' => $sales,
+
+                'note' => $request->detail_note[$index] ?? null,
             ]);
         }
 
@@ -317,6 +320,7 @@ class DailyReportController extends Controller
         $dailyReport->update([
             'site_id' => $request->site_id,
             'work_date' => $request->work_date,
+            'note' => $request->note,
         ]);
 
         /**
@@ -419,6 +423,8 @@ class DailyReportController extends Controller
                 'parking_cost' => $request->parking_cost[$index] ?? 0,
 
                 'sales' => $sales,
+
+                'note' => $request->detail_note[$index] ?? null,
             ]);
         }
 

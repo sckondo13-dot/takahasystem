@@ -12,6 +12,7 @@ class DailyReport extends Model
         'site_id',
         'work_date',
         'remarks',
+        'note',
     ];
 
     protected $casts = [

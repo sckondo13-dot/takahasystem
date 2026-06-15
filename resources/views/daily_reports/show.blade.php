@@ -111,6 +111,9 @@
                             <th class="border p-2">
                                 売上
                             </th>
+                            <th class="border p-2">
+                                備考
+                            </th>
 
                         </tr>
 
@@ -188,6 +191,9 @@
                                 {{ number_format($detail->sales) }}
 
                             </td>
+                            <td class="border p-2">
+                                {{ $detail->note }}
+                            </td>
 
                         </tr>
 
@@ -196,6 +202,19 @@
                     </tbody>
 
                 </table>
+                @if($dailyReport->note)
+
+                <div class="bg-yellow-50 border rounded p-4 mb-5">
+
+                    <div class="font-bold mb-2">
+                        全体備考
+                    </div>
+
+                    {!! nl2br(e($dailyReport->note)) !!}
+
+                </div>
+
+                @endif
 
             </div>
 
