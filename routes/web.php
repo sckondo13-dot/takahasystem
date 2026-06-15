@@ -8,6 +8,7 @@ use App\Http\Controllers\SubcontractorController;
 use App\Http\Controllers\SiteController;
 use App\Http\Controllers\DailyReportController;
 use App\Http\Controllers\AttendanceController;
+use App\Http\Controllers\AllowanceController;
 
 Route::redirect('/', '/login');
 
@@ -32,6 +33,8 @@ Route::middleware('auth')->group(function () {
 
     Route::get('/attendance', [AttendanceController::class, 'index'])
         ->name('attendance.index');
+
+    Route::resource('allowances', AllowanceController::class);
 });
 
 require __DIR__ . '/auth.php';

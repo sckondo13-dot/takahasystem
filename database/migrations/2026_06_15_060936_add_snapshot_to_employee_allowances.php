@@ -11,17 +11,14 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('allowances', function (Blueprint $table) {
-            $table->id();
+        Schema::table(
+            'employee_allowances',
+            function (Blueprint $table) {
 
-            $table->string('name');
-
-            $table->integer('amount');
-
-            $table->text('note')->nullable();
-
-            $table->timestamps();
-        });
+                $table->string('allowance_name')
+                    ->after('allowance_id');
+            }
+        );
     }
 
     /**
@@ -29,6 +26,8 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('allowances');
+        Schema::table('employee_allowances', function (Blueprint $table) {
+            //
+        });
     }
 };

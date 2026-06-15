@@ -81,7 +81,7 @@
                     <tr>
 
                         <th class="border p-2">
-                            日付
+                            日付（曜日）
                         </th>
 
                         <th class="border p-2">
@@ -100,6 +100,30 @@
                             残業
                         </th>
 
+                        <th class="border p-2">
+                            交通費
+                        </th>
+
+                        <th class="border p-2">
+                            高速代
+                        </th>
+
+                        <th class="border p-2">
+                            駐車場代
+                        </th>
+
+                        <th class="border p-2">
+                            単価
+                        </th>
+
+                        <th class="border p-2">
+                            作業手当
+                        </th>
+
+                        <th class="border p-2">
+                            個人備考
+                        </th>
+
                     </tr>
 
                 </thead>
@@ -110,33 +134,83 @@
 
                     <tr>
 
-                        <td class="border p-2">
+                        {{-- 日付 --}}
+                        <td class="border p-2 @if($detail->dailyReport->work_date->dayOfWeek === 0) text-red-600 @elseif($detail->dailyReport->work_date->dayOfWeek === 6) text-blue-600 @endif">
 
-                            {{ $detail->dailyReport->work_date->format('Y-m-d') }}
+                            {{ $detail->dailyReport->work_date->format('Y/m/d') }}
+
+                            （{{ ['日','月','火','水','木','金','土']
+                [$detail->dailyReport->work_date->dayOfWeek] }}）
 
                         </td>
 
-                        <td class="border p-2">
+                        {{-- 現場 --}}
+                        <td class="border p-2 @if($detail->dailyReport->work_date->dayOfWeek === 0) text-red-600 @elseif($detail->dailyReport->work_date->dayOfWeek === 6) text-blue-600 @endif">
 
                             {{ $detail->dailyReport->site->name }}
 
                         </td>
 
-                        <td class="border p-2">
+                        {{-- 作業内容 --}}
+                        <td class="border p-2 @if($detail->dailyReport->work_date->dayOfWeek === 0) text-red-600 @elseif($detail->dailyReport->work_date->dayOfWeek === 6) text-blue-600 @endif">
 
                             {{ $detail->workType->name }}
 
                         </td>
 
-                        <td class="border p-2 text-right">
+                        {{-- 人工 --}}
+                        <td class="border p-2 @if($detail->dailyReport->work_date->dayOfWeek === 0) text-red-600 @elseif($detail->dailyReport->work_date->dayOfWeek === 6) text-blue-600 @endif">
 
                             {{ $detail->man_hours }}
 
                         </td>
 
-                        <td class="border p-2 text-right">
+                        {{-- 残業 --}}
+                        <td class="border p-2 @if($detail->dailyReport->work_date->dayOfWeek === 0) text-red-600 @elseif($detail->dailyReport->work_date->dayOfWeek === 6) text-blue-600 @endif">
 
                             {{ $detail->overtime_hours }}
+
+                        </td>
+
+                        {{-- 交通費 --}}
+                        <td class="border p-2 @if($detail->dailyReport->work_date->dayOfWeek === 0) text-red-600 @elseif($detail->dailyReport->work_date->dayOfWeek === 6) text-blue-600 @endif">
+
+                            {{ number_format($detail->transportation_cost) }}
+
+                        </td>
+
+                        {{-- 高速代 --}}
+                        <td class="border p-2 @if($detail->dailyReport->work_date->dayOfWeek === 0) text-red-600 @elseif($detail->dailyReport->work_date->dayOfWeek === 6) text-blue-600 @endif">
+
+                            {{ number_format($detail->expressway_cost) }}
+
+                        </td>
+
+                        {{-- 駐車場代 --}}
+                        <td class="border p-2 @if($detail->dailyReport->work_date->dayOfWeek === 0) text-red-600 @elseif($detail->dailyReport->work_date->dayOfWeek === 6) text-blue-600 @endif">
+
+                            {{ number_format($detail->parking_cost) }}
+
+                        </td>
+
+                        {{-- 単価 --}}
+                        <td class="border p-2 @if($detail->dailyReport->work_date->dayOfWeek === 0) text-red-600 @elseif($detail->dailyReport->work_date->dayOfWeek === 6) text-blue-600 @endif">
+
+                            {{ number_format($detail->unit_price) }}
+
+                        </td>
+
+                        {{-- 作業手当 --}}
+                        <td class="border p-2 @if($detail->dailyReport->work_date->dayOfWeek === 0) text-red-600 @elseif($detail->dailyReport->work_date->dayOfWeek === 6) text-blue-600 @endif">
+
+                            {{ number_format($detail->work_allowance) }}
+
+                        </td>
+
+                        {{-- 個人備考 --}}
+                        <td class="border p-2 @if($detail->dailyReport->work_date->dayOfWeek === 0) text-red-600 @elseif($detail->dailyReport->work_date->dayOfWeek === 6) text-blue-600 @endif">
+
+                            {{ $detail->note }}
 
                         </td>
 
@@ -170,11 +244,116 @@
 
                         </td>
 
+                        <td class="border p-2 text-right">
+
+                            {{ number_format($totalTransportation) }}
+
+                        </td>
+
+                        <td class="border p-2 text-right">
+
+                            {{ number_format($totalExpressway) }}
+
+                        </td>
+
+                        <td class="border p-2 text-right">
+
+                            {{ number_format($totalParking) }}
+
+                        </td>
+
+                        <td></td>
+
+                        <td class="border p-2 text-right">
+
+                            {{ number_format($totalWorkAllowance) }}
+
+                        </td>
+
+                        <td></td>
+
                     </tr>
 
                 </tfoot>
 
             </table>
+            @if($fixedAllowances->count())
+
+            <div class="bg-white border rounded p-5 mt-5">
+
+                <h2 class="font-bold text-lg mb-3">
+
+                    固定手当
+
+                </h2>
+
+                <table class="w-full border">
+
+                    <thead class="bg-gray-100">
+
+                        <tr>
+
+                            <th class="border p-2">
+                                手当名
+                            </th>
+
+                            <th class="border p-2">
+                                金額
+                            </th>
+
+                        </tr>
+
+                    </thead>
+
+                    <tbody>
+
+                        @foreach($fixedAllowances as $allowance)
+
+                        <tr>
+
+                            <td class="border p-2">
+
+                                {{ $allowance->allowance_name }}
+
+                            </td>
+
+                            <td class="border p-2 text-right">
+
+                                {{ number_format($allowance->amount) }}
+
+                            </td>
+
+                        </tr>
+
+                        @endforeach
+
+                    </tbody>
+
+                    <tfoot class="bg-gray-100 font-bold">
+
+                        <tr>
+
+                            <td class="border p-2 text-right">
+
+                                合計
+
+                            </td>
+
+                            <td class="border p-2 text-right">
+
+                                {{ number_format($fixedAllowanceTotal) }}
+
+                            </td>
+
+                        </tr>
+
+                    </tfoot>
+
+                </table>
+
+            </div>
+
+            @endif
 
         </div>
 

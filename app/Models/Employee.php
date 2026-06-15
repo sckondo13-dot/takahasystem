@@ -15,4 +15,12 @@ class Employee extends Model
     {
         return $this->hasMany(DailyReportDetail::class);
     }
+    public function allowances()
+    {
+        return $this->hasMany(EmployeeAllowance::class);
+    }
+    public function employeeAllowances()
+    {
+        return $this->hasMany(EmployeeAllowance::class);
+    }
 }

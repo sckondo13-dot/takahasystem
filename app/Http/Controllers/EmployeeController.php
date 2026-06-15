@@ -4,6 +4,8 @@ namespace App\Http\Controllers;
 
 use App\Models\Employee;
 use Illuminate\Http\Request;
+use App\Models\Allowance;
+use App\Models\EmployeeAllowance;
 
 class EmployeeController extends Controller
 {
@@ -22,7 +24,14 @@ class EmployeeController extends Controller
      */
     public function create()
     {
-        return view('employees.create');
+        $allowances = Allowance::orderBy('type')
+            ->orderBy('name')
+            ->get();
+
+        return view(
+            'employees.create',
+            compact('allowances')
+        );
     }
 
     /**
@@ -34,9 +43,30 @@ class EmployeeController extends Controller
             'name' => 'required|max:255',
         ]);
 
-        Employee::create([
+        $employee = Employee::create([
             'name' => $request->name,
         ]);
+
+        foreach ($request->allowances ?? [] as $allowanceId) {
+
+            $allowance = Allowance::find($allowanceId);
+
+            EmployeeAllowance::create([
+
+                'employee_id' => $employee->id,
+
+                'allowance_id' => $allowance->id,
+
+                'allowance_name' => $allowance->name,
+
+                'amount' => $allowance->amount,
+
+                'start_date' => today(),
+
+                'end_date' => null,
+
+            ]);
+        }
 
         return redirect()
             ->route('employees.index')
@@ -48,7 +78,28 @@ class EmployeeController extends Controller
      */
     public function edit(Employee $employee)
     {
-        return view('employees.edit', compact('employee'));
+        $fixedAllowances = Allowance::where('type', 'fixed')->get();
+
+        $workAllowances = Allowance::where('type', 'work')->get();
+
+        $allowances = Allowance::orderBy('type')
+            ->orderBy('name')
+            ->get();
+
+        $currentAllowances = $employee
+            ->employeeAllowances()
+            ->whereNull('end_date')
+            ->pluck('allowance_id')
+            ->toArray();
+
+        return view(
+            'employees.edit',
+            compact(
+                'employee',
+                'allowances',
+                'currentAllowances'
+            )
+        );
     }
 
     /**
@@ -63,6 +114,83 @@ class EmployeeController extends Controller
         $employee->update([
             'name' => $request->name,
         ]);
+
+        $today = today();
+
+        /*
+    |--------------------------------------------------------------------------
+    | 現在有効な手当
+    |--------------------------------------------------------------------------
+    */
+        $currentIds = $employee
+            ->employeeAllowances()
+            ->whereNull('end_date')
+            ->pluck('allowance_id')
+            ->toArray();
+
+        /*
+    |--------------------------------------------------------------------------
+    | チェックされた手当
+    |--------------------------------------------------------------------------
+    */
+        $newIds = $request->allowances ?? [];
+
+        /*
+    |--------------------------------------------------------------------------
+    | チェックが外れた手当
+    |--------------------------------------------------------------------------
+    */
+        $removedIds = array_diff(
+            $currentIds,
+            $newIds
+        );
+
+        if (!empty($removedIds)) {
+
+            EmployeeAllowance::where(
+                'employee_id',
+                $employee->id
+            )
+                ->whereIn(
+                    'allowance_id',
+                    $removedIds
+                )
+                ->whereNull('end_date')
+                ->update([
+                    'end_date' => $today,
+                ]);
+        }
+
+        /*
+    |--------------------------------------------------------------------------
+    | 新しく追加された手当
+    |--------------------------------------------------------------------------
+    */
+        $addedIds = array_diff(
+            $newIds,
+            $currentIds
+        );
+
+        foreach ($addedIds as $allowanceId) {
+
+            $allowance = Allowance::find($allowanceId);
+
+            EmployeeAllowance::create([
+
+                'employee_id' => $employee->id,
+
+                'allowance_id' => $allowance->id,
+
+                'allowance_name' => $allowance->name,
+
+                'amount' => $allowance->amount,
+
+                'start_date' => $today,
+
+                'end_date' => null,
+
+            ]);
+        }
 
         return redirect()
             ->route('employees.index')

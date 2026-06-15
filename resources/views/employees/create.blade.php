@@ -28,6 +28,69 @@
                     {{ $message }}
                 </div>
                 @enderror
+                <div>
+
+                    <h3 class="font-bold mb-3">
+
+                        手当設定
+
+                    </h3>
+
+                    {{-- 固定手当 --}}
+                    <div class="mb-5">
+
+                        <div class="font-bold text-blue-600 mb-2">
+
+                            固定手当
+
+                        </div>
+
+                        @foreach($allowances->where('type', 'fixed') as $allowance)
+
+                        <label class="block">
+
+                            <input type="checkbox"
+                                name="allowances[]"
+                                value="{{ $allowance->id }}">
+
+                            {{ $allowance->name }}
+
+                            （{{ number_format($allowance->amount) }}円）
+
+                        </label>
+
+                        @endforeach
+
+                    </div>
+
+                    {{-- 作業手当 --}}
+                    <div>
+
+                        <div class="font-bold text-green-600 mb-2">
+
+                            作業手当対象
+
+                        </div>
+
+                        @foreach($allowances->where('type', 'work') as $allowance)
+
+                        <label class="block">
+
+                            <input type="checkbox"
+                                name="allowances[]"
+                                value="{{ $allowance->id }}">
+
+                            {{ $allowance->name }}
+
+                            （{{ number_format($allowance->amount) }}円）
+
+                        </label>
+
+                        @endforeach
+
+                    </div>
+
+                </div>
 
             </div>
 

@@ -47,6 +47,9 @@
                         <x-dropdown-link :href="route('employees.index')">
                             従業員管理
                         </x-dropdown-link>
+                        <x-dropdown-link :href="route('allowances.index')">
+                            手当管理
+                        </x-dropdown-link>
 
                         <x-dropdown-link :href="route('clients.index')">
                             元請け管理

@@ -6,6 +6,7 @@ use App\Models\DailyReportDetail;
 use App\Models\Employee;
 use Illuminate\Http\Request;
 use Carbon\Carbon;
+use App\Models\EmployeeAllowance;
 
 class AttendanceController extends Controller
 {
@@ -44,22 +45,70 @@ class AttendanceController extends Controller
 
         $totalOvertime = 0;
 
+        $totalTransportation = 0;
+
+        $totalExpressway = 0;
+
+        $totalParking = 0;
+
+        $totalWorkAllowance = 0;
+
+        $fixedAllowances = collect();
+
+        $fixedAllowanceTotal = 0;
+
         if ($employeeId) {
 
             $details = DailyReportDetail::with([
-                'dailyReport.site',
+                'dailyReport.site.client',
                 'workType',
+                'employee',
             ])
                 ->where('employee_id', $employeeId)
                 ->whereHas('dailyReport', function ($query) use ($start, $end) {
 
-                    $query->whereBetween('work_date', [$start, $end]);
+                    $query->whereBetween(
+                        'work_date',
+                        [$start, $end]
+                    );
+                })
+                ->join(
+                    'daily_reports',
+                    'daily_reports.id',
+                    '=',
+                    'daily_report_details.daily_report_id'
+                )
+                ->orderBy('daily_reports.work_date')
+                ->select('daily_report_details.*')
+                ->get();
+
+            $fixedAllowances = EmployeeAllowance::with('allowance')
+                ->where('employee_id', $employeeId)
+                ->whereNull('end_date')
+                ->whereHas('allowance', function ($query) {
+
+                    $query->where('type', 'fixed');
                 })
                 ->get();
+
+            $fixedAllowanceTotal =
+                $fixedAllowances->sum('amount');
 
             $totalManHours = $details->sum('man_hours');
 
             $totalOvertime = $details->sum('overtime_hours');
+
+            $totalTransportation =
+                $details->sum('transportation_cost');
+
+            $totalExpressway =
+                $details->sum('expressway_cost');
+
+            $totalParking =
+                $details->sum('parking_cost');
+
+            $totalWorkAllowance =
+                $details->sum('work_allowance');
         }
 
         return view('attendance.index', compact(
@@ -69,6 +118,12 @@ class AttendanceController extends Controller
             'details',
             'totalManHours',
             'totalOvertime',
+            'totalTransportation',
+            'totalExpressway',
+            'totalParking',
+            'totalWorkAllowance',
+            'fixedAllowances',
+            'fixedAllowanceTotal',
         ));
     }
 }

@@ -11,15 +11,18 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('allowances', function (Blueprint $table) {
+        Schema::create('allowance_histories', function (Blueprint $table) {
             $table->id();
-
-            $table->string('name');
+            $table->foreignId('allowance_id')
+                ->constrained()
+                ->cascadeOnDelete();
 
             $table->integer('amount');
 
-            $table->text('note')->nullable();
+            $table->date('start_date');
 
+            $table->date('end_date')
+                ->nullable();
             $table->timestamps();
         });
     }
@@ -29,6 +32,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('allowances');
+        Schema::dropIfExists('allowance_histories');
     }
 };
