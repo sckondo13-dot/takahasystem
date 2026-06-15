@@ -120,20 +120,7 @@
                     @endif">
 
                         {{-- 日付 --}}
-                        <td class="
-    border p-2
-    font-bold
-    sticky left-0
-    z-10
-
-    @if($date->dayOfWeek === 0)
-        bg-red-50 text-red-600
-    @elseif($date->dayOfWeek === 6)
-        bg-blue-50 text-blue-600
-    @else
-        bg-gray-50
-    @endif
-">
+                        <td class="border p-2 font-bold    sticky left-0 z-10 @if($date->dayOfWeek === 0) bg-red-50 text-red-600 @elseif($date->dayOfWeek === 6) bg-blue-50 text-blue-600 @endif">
 
                             {{ $date->format('n/j') }}
 
