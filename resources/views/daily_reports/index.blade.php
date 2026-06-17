@@ -1,6 +1,6 @@
 <x-app-layout>
 
-    <div class="max-w-full mx-auto py-10 px-5">
+    <div class="max-w-full mx-auto py-4 px-5">
 
         {{-- header --}}
         <div class="flex justify-between items-center mb-5">
@@ -71,7 +71,7 @@
         @endif
 
         {{-- table --}}
-        <div class="overflow-auto max-h-[80vh] border">
+        <div class="overflow-auto max-h-[68vh] border">
 
             <table class="border-collapse border w-full">
 

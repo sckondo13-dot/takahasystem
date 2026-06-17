@@ -43,7 +43,7 @@
                         <x-dropdown-link :href="route('sites.index')">
                             現場管理
                         </x-dropdown-link>
-                        
+
                         <x-dropdown-link :href="route('employees.index')">
                             従業員管理
                         </x-dropdown-link>
@@ -67,7 +67,7 @@
                             @csrf
 
                             <x-dropdown-link :href="route('logout')"
-                                    onclick="event.preventDefault();
+                                onclick="event.preventDefault();
                                                 this.closest('form').submit();">
                                 ログアウト
                             </x-dropdown-link>
@@ -100,12 +100,35 @@
         <div class="pt-4 pb-1 border-t border-gray-200">
             <div class="px-4">
                 <div class="font-medium text-base text-gray-800">{{ Auth::user()->name }}</div>
-                <div class="font-medium text-sm text-gray-500">{{ Auth::user()->email }}</div>
             </div>
 
             <div class="mt-3 space-y-1">
+                <x-responsive-nav-link :href="route('daily-reports.index')">
+                    日報管理
+                </x-responsive-nav-link>
+                <x-responsive-nav-link :href="route('attendance.index')">
+                    個人出勤簿
+                </x-responsive-nav-link>
+                <x-responsive-nav-link :href="route('sites.index')">
+                    現場管理
+                </x-responsive-nav-link>
+
+                <x-responsive-nav-link :href="route('employees.index')">
+                    従業員管理
+                </x-responsive-nav-link>
+                <x-responsive-nav-link :href="route('allowances.index')">
+                    手当管理
+                </x-responsive-nav-link>
+
+                <x-responsive-nav-link :href="route('clients.index')">
+                    元請け管理
+                </x-responsive-nav-link>
+
+                <x-responsive-nav-link :href="route('subcontractors.index')">
+                    下請け管理
+                </x-responsive-nav-link>
                 <x-responsive-nav-link :href="route('profile.edit')">
-                    {{ __('Profile') }}
+                    プロフィール変更
                 </x-responsive-nav-link>
 
                 <!-- Authentication -->
@@ -113,9 +136,9 @@
                     @csrf
 
                     <x-responsive-nav-link :href="route('logout')"
-                            onclick="event.preventDefault();
-                                        this.closest('form').submit();">
-                        {{ __('Log Out') }}
+                        onclick="event.preventDefault();
+                                                this.closest('form').submit();">
+                        ログアウト
                     </x-responsive-nav-link>
                 </form>
             </div>
