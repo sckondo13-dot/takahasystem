@@ -19,6 +19,17 @@ class DailyReportDetail extends Model
         'parking_cost',
         'sales',
         'note',
+        'attendance_time_name',
+        'start_time',
+        'end_time',
+    ];
+
+    protected $casts = [
+
+        'start_time' => 'datetime:H:i',
+
+        'end_time' => 'datetime:H:i',
+
     ];
 
     public function dailyReport(): BelongsTo

@@ -9,6 +9,7 @@ use App\Models\Site;
 use App\Models\Subcontractor;
 use App\Models\WorkType;
 use Illuminate\Http\Request;
+use App\Models\AttendanceTime;
 
 class DailyReportController extends Controller
 {
@@ -106,6 +107,8 @@ class DailyReportController extends Controller
 
         $workers = collect();
 
+        $attendanceTimes = AttendanceTime::orderBy('name')->get();
+
         foreach ($employees as $employee) {
 
             $workers->push([
@@ -128,6 +131,7 @@ class DailyReportController extends Controller
             'sites',
             'workTypes',
             'workers',
+            'attendanceTimes',
         ));
     }
 
@@ -163,6 +167,7 @@ class DailyReportController extends Controller
 
             $employeeId = null;
             $subcontractorId = null;
+            $attendance = null;
 
             if ($type === 'employee') {
 
@@ -224,6 +229,13 @@ class DailyReportController extends Controller
 
             $sales += $overtimePrice * $overtimeHours;
 
+            if (!empty($request->attendance_time_id[$index])) {
+
+                $attendance = AttendanceTime::find(
+                    $request->attendance_time_id[$index]
+                );
+            }
+
             DailyReportDetail::create([
 
                 'daily_report_id' => $dailyReport->id,
@@ -247,6 +259,15 @@ class DailyReportController extends Controller
                 'sales' => $sales,
 
                 'note' => $request->detail_note[$index] ?? null,
+
+                'attendance_time_name'
+                => $attendance?->name,
+
+                'start_time'
+                => $attendance?->start_time,
+
+                'end_time'
+                => $attendance?->end_time,
             ]);
         }
 
@@ -280,6 +301,8 @@ class DailyReportController extends Controller
         $workTypes = WorkType::orderBy('id')->get();
 
         $workers = collect();
+        $attendanceTimes =
+            AttendanceTime::orderBy('name')->get();
 
         foreach ($employees as $employee) {
 
@@ -402,6 +425,15 @@ class DailyReportController extends Controller
 
             $sales += $overtimePrice * $overtimeHours;
 
+            $attendance = null;
+
+            if (!empty($request->attendance_time_id[$index])) {
+
+                $attendance = AttendanceTime::find(
+                    $request->attendance_time_id[$index]
+                );
+            }
+
             DailyReportDetail::create([
 
                 'daily_report_id' => $dailyReport->id,
@@ -425,6 +457,15 @@ class DailyReportController extends Controller
                 'sales' => $sales,
 
                 'note' => $request->detail_note[$index] ?? null,
+
+                'attendance_time_name'
+                => $attendance?->name,
+
+                'start_time'
+                => $attendance?->start_time,
+
+                'end_time'
+                => $attendance?->end_time,
             ]);
         }
 

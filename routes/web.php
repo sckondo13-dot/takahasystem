@@ -9,6 +9,7 @@ use App\Http\Controllers\SiteController;
 use App\Http\Controllers\DailyReportController;
 use App\Http\Controllers\AttendanceController;
 use App\Http\Controllers\AllowanceController;
+use App\Http\Controllers\AttendanceTimeController;
 
 Route::redirect('/', '/login');
 
@@ -35,6 +36,10 @@ Route::middleware('auth')->group(function () {
         ->name('attendance.index');
 
     Route::resource('allowances', AllowanceController::class);
+    Route::resource(
+        'attendance-times',
+        AttendanceTimeController::class
+    );
 });
 
 require __DIR__ . '/auth.php';

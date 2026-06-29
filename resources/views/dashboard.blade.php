@@ -33,6 +33,9 @@
                     <x-dropdown-link :href="route('subcontractors.index')">
                         下請け管理
                     </x-dropdown-link>
+                    <x-dropdown-link :href="route('attendance-times.index')">
+                        出退勤時間管理
+                    </x-dropdown-link>
                 </div>
             </div>
         </div>

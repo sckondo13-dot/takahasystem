@@ -93,7 +93,9 @@
                                 <th class="border p-2">
                                     作業者
                                 </th>
-
+                                <th class="border p-2">
+                                    勤務区分
+                                </th>
                                 <th class="border p-2">
                                     作業内容
                                 </th>
@@ -148,6 +150,32 @@
                                         <option value="{{ $worker['type'] }}_{{ $worker['id'] }}">
 
                                             {{ $worker['name'] }}
+
+                                        </option>
+
+                                        @endforeach
+
+                                    </select>
+
+                                </td>
+                                <td class="border p-2">
+
+                                    <select
+                                        name="attendance_time_id[]"
+                                        class="w-full border rounded p-2">
+
+                                        <option value="">
+
+                                            選択してください
+
+                                        </option>
+
+                                        @foreach($attendanceTimes as $attendanceTime)
+
+                                        <option
+                                            value="{{ $attendanceTime->id }}">
+
+                                            {{ $attendanceTime->name }}
 
                                         </option>
 
