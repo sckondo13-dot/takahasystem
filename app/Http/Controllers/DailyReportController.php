@@ -327,6 +327,7 @@ class DailyReportController extends Controller
             'sites',
             'workTypes',
             'workers',
+            'attendanceTimes',
         ));
     }
 

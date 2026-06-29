@@ -177,18 +177,15 @@
                                         name="attendance_time_id[]"
                                         class="w-full border rounded p-2">
 
-                                        <option
-                                            value="{{ $attendanceTime->id }}"
-                                            {{ $detail->attendance_time_name == $attendanceTime->name ? 'selected' : '' }}>
-
-                                            {{ $attendanceTime->name }}
-
+                                        <option value="">
+                                            選択してください
                                         </option>
 
                                         @foreach($attendanceTimes as $attendanceTime)
 
                                         <option
-                                            value="{{ $attendanceTime->id }}">
+                                            value="{{ $attendanceTime->id }}"
+                                            {{ $detail->attendance_time_name == $attendanceTime->name ? 'selected' : '' }}>
 
                                             {{ $attendanceTime->name }}
 
