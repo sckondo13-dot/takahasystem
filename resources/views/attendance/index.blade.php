@@ -91,6 +91,17 @@
                         <th class="border p-2">
                             作業内容
                         </th>
+                        <th class="border p-2">
+                            出勤
+                        </th>
+
+                        <th class="border p-2">
+                            退勤
+                        </th>
+
+                        <th class="border p-2">
+                            休憩
+                        </th>
 
                         <th class="border p-2">
                             人工
@@ -132,91 +143,109 @@
 
                     @foreach($details as $detail)
 
-                    <tr>
+                        <tr>
 
-                        {{-- 日付 --}}
-                        <td class="border p-2 @if($detail->dailyReport->work_date->dayOfWeek === 0) text-red-600 @elseif($detail->dailyReport->work_date->dayOfWeek === 6) text-blue-600 @endif">
+                            {{-- 日付 --}}
+                            <td class="border p-2 @if($detail->dailyReport->work_date->dayOfWeek === 0) text-red-600 @elseif($detail->dailyReport->work_date->dayOfWeek === 6) text-blue-600 @endif">
 
-                            {{ $detail->dailyReport->work_date->format('Y/m/d') }}
+                                {{ $detail->dailyReport->work_date->format('Y/m/d') }}
 
-                            （{{ ['日','月','火','水','木','金','土']
+                                （{{ ['日','月','火','水','木','金','土']
                 [$detail->dailyReport->work_date->dayOfWeek] }}）
 
-                        </td>
+                            </td>
 
-                        {{-- 現場 --}}
-                        <td class="border p-2 @if($detail->dailyReport->work_date->dayOfWeek === 0) text-red-600 @elseif($detail->dailyReport->work_date->dayOfWeek === 6) text-blue-600 @endif">
+                            {{-- 現場 --}}
+                            <td class="border p-2 @if($detail->dailyReport->work_date->dayOfWeek === 0) text-red-600 @elseif($detail->dailyReport->work_date->dayOfWeek === 6) text-blue-600 @endif">
 
-                            {{ $detail->dailyReport->site->name }}
+                                {{ $detail->dailyReport->site->name }}
 
-                        </td>
+                            </td>
 
-                        {{-- 作業内容 --}}
-                        <td class="border p-2 @if($detail->dailyReport->work_date->dayOfWeek === 0) text-red-600 @elseif($detail->dailyReport->work_date->dayOfWeek === 6) text-blue-600 @endif">
+                            {{-- 作業内容 --}}
+                            <td class="border p-2 @if($detail->dailyReport->work_date->dayOfWeek === 0) text-red-600 @elseif($detail->dailyReport->work_date->dayOfWeek === 6) text-blue-600 @endif">
 
-                            {{ $detail->workType->name }}
+                                {{ $detail->workType->name }}
 
-                        </td>
+                            </td>
+                            {{-- 出勤 --}}
+                            <td class="border p-2 text-center">
 
-                        {{-- 人工 --}}
-                        <td class="border p-2 @if($detail->dailyReport->work_date->dayOfWeek === 0) text-red-600 @elseif($detail->dailyReport->work_date->dayOfWeek === 6) text-blue-600 @endif">
+                                {{ $detail->start_time_formatted }}
 
-                            {{ $detail->man_hours }}
+                            </td>
+                            {{-- 退勤 --}}
+                            <td class="border p-2 text-center">
 
-                        </td>
+                                {{ $detail->end_time_formatted }}
 
-                        {{-- 残業 --}}
-                        <td class="border p-2 @if($detail->dailyReport->work_date->dayOfWeek === 0) text-red-600 @elseif($detail->dailyReport->work_date->dayOfWeek === 6) text-blue-600 @endif">
+                            </td>
+                            {{-- 休憩 --}}
+                            <td class="border p-2 text-center">
 
-                            {{ $detail->overtime_hours }}
+                                {{ $detail->break_hours_formatted }}h
 
-                        </td>
+                            </td>
 
-                        {{-- 交通費 --}}
-                        <td class="border p-2 @if($detail->dailyReport->work_date->dayOfWeek === 0) text-red-600 @elseif($detail->dailyReport->work_date->dayOfWeek === 6) text-blue-600 @endif">
+                            {{-- 人工 --}}
+                            <td class="border p-2 @if($detail->dailyReport->work_date->dayOfWeek === 0) text-red-600 @elseif($detail->dailyReport->work_date->dayOfWeek === 6) text-blue-600 @endif">
 
-                            {{ number_format($detail->transportation_cost) }}
+                                {{ $detail->man_hours }}
 
-                        </td>
+                            </td>
 
-                        {{-- 高速代 --}}
-                        <td class="border p-2 @if($detail->dailyReport->work_date->dayOfWeek === 0) text-red-600 @elseif($detail->dailyReport->work_date->dayOfWeek === 6) text-blue-600 @endif">
+                            {{-- 残業 --}}
+                            <td class="border p-2 @if($detail->dailyReport->work_date->dayOfWeek === 0) text-red-600 @elseif($detail->dailyReport->work_date->dayOfWeek === 6) text-blue-600 @endif">
 
-                            {{ number_format($detail->expressway_cost) }}
+                                {{ $detail->overtime_hours }}
 
-                        </td>
+                            </td>
 
-                        {{-- 駐車場代 --}}
-                        <td class="border p-2 @if($detail->dailyReport->work_date->dayOfWeek === 0) text-red-600 @elseif($detail->dailyReport->work_date->dayOfWeek === 6) text-blue-600 @endif">
+                            {{-- 交通費 --}}
+                            <td class="border p-2 @if($detail->dailyReport->work_date->dayOfWeek === 0) text-red-600 @elseif($detail->dailyReport->work_date->dayOfWeek === 6) text-blue-600 @endif">
 
-                            {{ number_format($detail->parking_cost) }}
+                                {{ number_format($detail->transportation_cost) }}
 
-                        </td>
+                            </td>
 
-                        {{-- 単価 --}}
-                        <td class="border p-2 @if($detail->dailyReport->work_date->dayOfWeek === 0) text-red-600 @elseif($detail->dailyReport->work_date->dayOfWeek === 6) text-blue-600 @endif">
+                            {{-- 高速代 --}}
+                            <td class="border p-2 @if($detail->dailyReport->work_date->dayOfWeek === 0) text-red-600 @elseif($detail->dailyReport->work_date->dayOfWeek === 6) text-blue-600 @endif">
 
-                            {{ number_format($detail->unit_price) }}
+                                {{ number_format($detail->expressway_cost) }}
 
-                        </td>
+                            </td>
 
-                        {{-- 作業手当 --}}
-                        <td class="border p-2 @if($detail->dailyReport->work_date->dayOfWeek === 0) text-red-600 @elseif($detail->dailyReport->work_date->dayOfWeek === 6) text-blue-600 @endif">
+                            {{-- 駐車場代 --}}
+                            <td class="border p-2 @if($detail->dailyReport->work_date->dayOfWeek === 0) text-red-600 @elseif($detail->dailyReport->work_date->dayOfWeek === 6) text-blue-600 @endif">
 
-                            {{ number_format($detail->work_allowance) }}
+                                {{ number_format($detail->parking_cost) }}
 
-                        </td>
+                            </td>
 
-                        {{-- 個人備考 --}}
-                        <td class="border p-2 @if($detail->dailyReport->work_date->dayOfWeek === 0) text-red-600 @elseif($detail->dailyReport->work_date->dayOfWeek === 6) text-blue-600 @endif">
+                            {{-- 単価 --}}
+                            <td class="border p-2 @if($detail->dailyReport->work_date->dayOfWeek === 0) text-red-600 @elseif($detail->dailyReport->work_date->dayOfWeek === 6) text-blue-600 @endif">
 
-                            {{ $detail->note }}
+                                {{ number_format($detail->unit_price) }}
 
-                        </td>
+                            </td>
 
-                    </tr>
+                            {{-- 作業手当 --}}
+                            <td class="border p-2 @if($detail->dailyReport->work_date->dayOfWeek === 0) text-red-600 @elseif($detail->dailyReport->work_date->dayOfWeek === 6) text-blue-600 @endif">
 
-                    @endforeach
+                                {{ number_format($detail->work_allowance) }}
+
+                            </td>
+
+                            {{-- 個人備考 --}}
+                            <td class="border p-2 @if($detail->dailyReport->work_date->dayOfWeek === 0) text-red-600 @elseif($detail->dailyReport->work_date->dayOfWeek === 6) text-blue-600 @endif">
+
+                                {{ $detail->note }}
+
+                            </td>
+
+                        </tr>
+
+                        @endforeach
 
                 </tbody>
 
@@ -225,7 +254,7 @@
 
                     <tr>
 
-                        <td colspan="3"
+                        <td colspan="6"
                             class="border p-2 text-right">
 
                             合計

@@ -89,6 +89,10 @@
                             </th>
 
                             <th class="border p-2">
+                                出退勤時間
+                            </th>
+
+                            <th class="border p-2">
                                 人工
                             </th>
 
@@ -148,6 +152,30 @@
                             <td class="border p-2">
 
                                 {{ $detail->workType->name }}
+
+                            </td>
+
+                            <td class="border p-2 text-center">
+
+                                @if($detail->attendance_time_name)
+
+                                <div class="font-semibold">
+                                    {{ $detail->attendance_time_name }}
+                                </div>
+
+                                <div class="text-sm text-gray-500">
+
+                                    {{ substr($detail->start_time, 0, 5) }}
+                                    ～
+                                    {{ substr($detail->end_time, 0, 5) }}
+
+                                </div>
+
+                                @else
+
+                                -
+
+                                @endif
 
                             </td>
 

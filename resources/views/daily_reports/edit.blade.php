@@ -275,7 +275,7 @@
                                     <input type="text"
                                         name="detail_note[]"
                                         class="w-48 border rounded p-2"
-                                        value="{{ $detail->detail_note }}">>
+                                        value="{{ $detail->detail_note }}">
 
                                 </td>
 
