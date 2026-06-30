@@ -97,7 +97,9 @@ class DailyReportController extends Controller
      */
     public function create()
     {
-        $sites = Site::orderBy('name')->get();
+        $sites = Site::where('status', '解体中')
+            ->orderBy('name')
+            ->get();
 
         $employees = Employee::orderBy('name')->get();
 
@@ -292,8 +294,10 @@ class DailyReportController extends Controller
     {
         $dailyReport->load('details');
 
-        $sites = Site::orderBy('name')->get();
-
+        $sites = Site::where('status', '解体中')
+            ->orWhere('id', $dailyReport->site_id)
+            ->orderBy('name')
+            ->get();
         $employees = Employee::orderBy('name')->get();
 
         $subcontractors = Subcontractor::orderBy('name')->get();

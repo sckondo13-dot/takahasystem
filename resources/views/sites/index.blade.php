@@ -42,6 +42,10 @@
                     </th>
 
                     <th class="border p-2">
+                        状況
+                    </th>
+
+                    <th class="border p-2">
                         契約
                     </th>
 
@@ -74,6 +78,27 @@
                     <td class="border p-2">
 
                         {{ $site->contract_type }}
+
+                    </td>
+                    <td class="border p-2">
+
+                        @if($site->status=='解体中')
+
+                        <span class="bg-green-100 text-green-700 px-2 py-1 rounded">
+
+                            解体中
+
+                        </span>
+
+                        @else
+
+                        <span class="bg-gray-200 text-gray-700 px-2 py-1 rounded">
+
+                            解体完了
+
+                        </span>
+
+                        @endif
 
                     </td>
 

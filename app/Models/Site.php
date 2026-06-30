@@ -12,6 +12,7 @@ class Site extends Model
         'client_id',
         'name',
         'contract_type',
+        'status',
     ];
 
     public function client(): BelongsTo

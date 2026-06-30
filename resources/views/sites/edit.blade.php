@@ -114,6 +114,28 @@
 
             </div>
 
+            <select
+                name="status"
+                class="w-full border rounded p-2">
+
+                <option
+                    value="解体中"
+                    {{ old('status',$site->status)=='解体中'?'selected':'' }}>
+
+                    解体中
+
+                </option>
+
+                <option
+                    value="解体完了"
+                    {{ old('status',$site->status)=='解体完了'?'selected':'' }}>
+
+                    解体完了
+
+                </option>
+
+            </select>
+
             <button class="bg-blue-600 hover:bg-blue-700 text-white px-5 py-2 rounded">
 
                 更新

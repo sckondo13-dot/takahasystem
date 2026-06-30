@@ -45,6 +45,7 @@ class SiteController extends Controller
             'client_id' => $request->client_id,
             'name' => $request->name,
             'contract_type' => $request->contract_type,
+            'status' => $request->status,
         ]);
 
         return redirect()
@@ -80,6 +81,7 @@ class SiteController extends Controller
             'client_id' => $request->client_id,
             'name' => $request->name,
             'contract_type' => $request->contract_type,
+            'status'=>$request->status,
         ]);
 
         return redirect()

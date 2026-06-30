@@ -72,6 +72,30 @@
 
             </div>
 
+            <div>
+
+                <label class="block mb-1">
+
+                    状況
+
+                </label>
+
+                <select
+                    name="status"
+                    class="w-full border rounded p-2">
+
+                    <option value="解体中">
+                        解体中
+                    </option>
+
+                    <option value="解体完了">
+                        解体完了
+                    </option>
+
+                </select>
+
+            </div>
+
             <button class="bg-blue-600 text-white px-5 py-2 rounded">
 
                 登録
