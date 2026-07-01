@@ -230,15 +230,101 @@
                     </tbody>
 
                 </table>
-                @if($dailyReport->note)
 
-                <div class="bg-yellow-50 border rounded p-4 mb-5">
 
-                    <div class="font-bold mb-2">
-                        全体備考
-                    </div>
+                @if($dailyReport->items->count())
 
-                    {!! nl2br(e($dailyReport->note)) !!}
+                <div class="mt-8">
+
+                    <h2 class="text-xl font-bold mb-3">
+
+                        現場費
+
+                    </h2>
+
+                    <table class="w-full border">
+
+                        <thead class="bg-gray-100">
+
+                            <tr>
+
+                                <th class="border p-2">
+
+                                    区分
+
+                                </th>
+
+                                <th class="border p-2">
+
+                                    項目名
+
+                                </th>
+
+                                <th class="border p-2">
+
+                                    数量
+
+                                </th>
+
+                                <th class="border p-2">
+
+                                    単位
+
+                                </th>
+
+                                <th class="border p-2">
+
+                                    備考
+
+                                </th>
+
+                            </tr>
+
+                        </thead>
+
+                        <tbody>
+
+                            @foreach($dailyReport->items as $item)
+
+                            <tr>
+
+                                <td class="border p-2">
+
+                                    {{ $item->category }}
+
+                                </td>
+
+                                <td class="border p-2">
+
+                                    {{ $item->name }}
+
+                                </td>
+
+                                <td class="border p-2 text-right">
+
+                                    {{ $item->quantity }}
+
+                                </td>
+
+                                <td class="border p-2">
+
+                                    {{ $item->unit }}
+
+                                </td>
+
+                                <td class="border p-2">
+
+                                    {{ $item->note }}
+
+                                </td>
+
+                            </tr>
+
+                            @endforeach
+
+                        </tbody>
+
+                    </table>
 
                 </div>
 
@@ -247,6 +333,20 @@
             </div>
 
         </div>
+
+        @if($dailyReport->note)
+
+        <div class="bg-yellow-50 border rounded p-4 mb-5">
+
+            <div class="font-bold mb-2">
+                全体備考
+            </div>
+
+            {!! nl2br(e($dailyReport->note)) !!}
+
+        </div>
+
+        @endif
 
     </div>
 

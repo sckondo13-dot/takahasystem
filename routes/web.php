@@ -10,6 +10,7 @@ use App\Http\Controllers\DailyReportController;
 use App\Http\Controllers\AttendanceController;
 use App\Http\Controllers\AllowanceController;
 use App\Http\Controllers\AttendanceTimeController;
+use App\Http\Controllers\SiteReportController;
 
 Route::redirect('/', '/login');
 
@@ -40,6 +41,14 @@ Route::middleware('auth')->group(function () {
         'attendance-times',
         AttendanceTimeController::class
     );
+
+    Route::resource('site-reports', SiteReportController::class)
+        ->only(['index']);
+
+    Route::get(
+        '/site-reports/monthly',
+        [SiteReportController::class, 'monthly']
+    )->name('site-reports.monthly');
 });
 
 require __DIR__ . '/auth.php';

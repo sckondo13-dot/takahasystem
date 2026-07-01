@@ -302,6 +302,221 @@
                 </div>
 
             </div>
+            {{-- 現場費 --}}
+            <div class="bg-white border rounded p-5 mt-5">
+
+                <div class="flex justify-between items-center mb-5">
+
+                    <h2 class="text-xl font-bold">
+                        現場費
+                    </h2>
+
+                    <button
+                        type="button"
+                        id="addFreeItem"
+                        class="bg-green-600 text-white px-4 py-2 rounded">
+
+                        ＋ 項目追加
+
+                    </button>
+
+                </div>
+
+                <table class="w-full border" id="freeItemTable">
+
+                    <thead class="bg-gray-100">
+
+                        <tr>
+
+                            <th class="border p-2">
+                                項目名
+                            </th>
+
+                            <th class="border p-2">
+                                カテゴリ
+                            </th>
+
+                            <th class="border p-2">
+                                数量
+                            </th>
+
+                            <th class="border p-2">
+                                単位
+                            </th>
+
+                            <th class="border p-2">
+                                備考
+                            </th>
+
+                            <th class="border p-2 w-20">
+
+                            </th>
+
+                        </tr>
+
+                    </thead>
+
+                    <tbody id="itemTableBody">
+
+                        @forelse($dailyReport->items as $item)
+
+                        <tr>
+
+                            <td class="border p-2">
+
+                                <input
+                                    type="text"
+                                    name="item_name[]"
+                                    value="{{ $item->name }}"
+                                    class="w-full border rounded p-2">
+
+                            </td>
+
+                            <td class="border p-2">
+
+                                <select name="item_category[]" class="w-full border rounded p-2">
+
+                                    <option value="貸出"
+                                        {{ $item->category=='貸出'?'selected':'' }}>
+                                        貸出
+                                    </option>
+
+                                    <option value="資材"
+                                        {{ $item->category=='資材'?'selected':'' }}>
+                                        資材
+                                    </option>
+
+                                    <option value="その他"
+                                        {{ $item->category=='その他'?'selected':'' }}>
+                                        その他
+                                    </option>
+
+                                </select>
+
+                            </td>
+
+
+
+                            <td class="border p-2">
+
+                                <input
+                                    type="number"
+                                    step="0.01"
+                                    name="item_quantity[]"
+                                    value="{{ $item->quantity }}" class="w-full border rounded p-2">
+
+                            </td>
+
+                            <td class="border p-2">
+
+                                <input
+                                    type="text"
+                                    name="item_unit[]"
+                                    value="{{ $item->unit }}" class="w-full border rounded p-2">
+
+                            </td>
+
+                            <td class="border p-2 text-center">
+
+                                <input
+                                    type="text"
+                                    name="item_note[]"
+                                    value="{{ $item->note }}"
+                                    class="w-full border rounded p-2">
+
+                            </td>
+
+                            <td class="border p-2 text-center">
+
+                                <button
+                                    type="button"
+                                    class="removeItemRow bg-red-500 text-white px-3 py-1 rounded">
+
+                                    削除
+
+                                </button>
+
+                            </td>
+
+                        </tr>
+
+                        @empty
+
+                        <tr>
+
+                            <td class="border p-2">
+
+                                <input type="text"
+                                    name="item_name[]" class="w-full border rounded p-2">
+
+                            </td>
+
+                            <td class="border p-2">
+
+                                <select name="item_category[]" class="w-full border rounded p-2">
+
+                                    <option value="貸出">
+                                        貸出
+                                    </option>
+
+                                    <option value="資材">
+                                        資材
+                                    </option>
+
+                                    <option value="その他">
+                                        その他
+                                    </option>
+
+                                </select>
+
+                            </td>
+
+
+
+                            <td class="border p-2">
+
+                                <input type="number"
+                                    step="0.01"
+                                    name="item_quantity[]"
+                                    value="1" class="w-full border rounded p-2">
+
+                            </td>
+
+                            <td class="border p-2">
+
+                                <input type="text"
+                                    name="item_unit[]" class="w-full border rounded p-2">
+
+                            </td>
+
+                            <td class="border p-2">
+
+                                <input type="text"
+                                    name="item_note[]" class="w-full border rounded p-2">
+
+                            </td>
+
+                            <td class="border p-2 text-center">
+
+                                <button
+                                    type="button"
+                                    class="removeItemRow bg-red-500 text-white px-3 py-1 rounded">
+
+                                    削除
+
+                                </button>
+
+                            </td>
+
+                        </tr>
+
+                        @endforelse
+
+                    </tbody>
+
+                </table>
+
+            </div>
             <div class="mt-5">
 
                 <label class="block mb-1 font-bold">

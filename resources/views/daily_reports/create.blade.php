@@ -286,6 +286,144 @@
                 </div>
 
             </div>
+            {{-- 現場費 --}}
+            <div class="bg-white border rounded p-5 mt-5">
+
+                <div class="flex justify-between items-center mb-5">
+
+                    <h2 class="text-xl font-bold">
+                        現場費
+                    </h2>
+
+                    <button
+                        type="button"
+                        id="addFreeItem"
+                        class="bg-green-600 text-white px-4 py-2 rounded">
+
+                        ＋ 項目追加
+
+                    </button>
+
+                </div>
+
+                <table class="w-full border" id="freeItemTable">
+
+                    <thead class="bg-gray-100">
+
+                        <tr>
+
+                            <th class="border p-2 w-2/5">
+                                項目名
+                            </th>
+
+                            <th class="border p-2 w-2/5">
+                                カテゴリ
+                            </th>
+
+                            <th class="border p-2 w-1/5">
+                                数量
+                            </th>
+
+                            <th class="border p-2 w-1/5">
+                                単位
+                            </th>
+
+                            <th class="border p-2">
+                                備考
+                            </th>
+
+                            <th class="border p-2 w-20">
+
+                            </th>
+
+                        </tr>
+
+                    </thead>
+
+                    <tbody id="freeItemBody">
+
+                        <tr>
+
+                            <td class="border p-2">
+
+                                <input
+                                    type="text"
+                                    name="item_name[]"
+                                    class="w-full border rounded p-2"
+                                    placeholder="例：鉄板5×10">
+
+                            </td>
+
+                            <td class="border p-2">
+
+                                <select
+                                    name="item_category[]"
+                                    class="w-full border rounded p-2">
+
+                                    <option value="貸出">
+                                        貸出
+                                    </option>
+
+                                    <option value="資材">
+                                        資材
+                                    </option>
+
+                                    <option value="その他">
+                                        その他
+                                    </option>
+
+                                </select>
+
+                            </td>
+
+                            <td class="border p-2">
+
+                                <input
+                                    type="number"
+                                    name="item_quantity[]"
+                                    class="w-full border rounded p-2"
+                                    value="1">
+
+                            </td>
+
+                            <td class="border p-2">
+
+                                <input
+                                    type="text"
+                                    name="item_unit[]"
+                                    class="w-full border rounded p-2"
+                                    placeholder="枚・台・本">
+
+                            </td>
+
+                            <td class="border p-2">
+
+                                <input
+                                    type="text"
+                                    name="item_note[]"
+                                    class="w-full border rounded p-2">
+
+                            </td>
+
+                            <td class="border p-2 text-center">
+
+                                <button
+                                    type="button"
+                                    class="removeFreeItem bg-red-500 text-white px-3 py-1 rounded">
+
+                                    削除
+
+                                </button>
+
+                            </td>
+
+                        </tr>
+
+                    </tbody>
+
+                </table>
+
+            </div>
 
             <div class="mt-5">
 
@@ -366,6 +504,50 @@
                         e.target.closest('tr').remove();
                     }
                 }
+            });
+            // 現場費追加
+            const addFreeItem = document.getElementById('addFreeItem');
+            const freeItemBody = document.getElementById('freeItemBody');
+
+            addFreeItem.addEventListener('click', () => {
+
+                const firstRow = freeItemBody.querySelector('tr');
+
+                const newRow = firstRow.cloneNode(true);
+
+                newRow.querySelectorAll('input').forEach(input => {
+
+                    if (input.name === 'free_item_quantity[]') {
+
+                        input.value = 1;
+
+                    } else {
+
+                        input.value = '';
+
+                    }
+
+                });
+
+                freeItemBody.appendChild(newRow);
+
+            });
+
+            // 現場費削除
+            document.addEventListener('click', (e) => {
+
+                if (e.target.classList.contains('removeFreeItem')) {
+
+                    const rows = freeItemBody.querySelectorAll('tr');
+
+                    if (rows.length > 1) {
+
+                        e.target.closest('tr').remove();
+
+                    }
+
+                }
+
             });
 
         });

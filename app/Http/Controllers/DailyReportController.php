@@ -10,6 +10,7 @@ use App\Models\Subcontractor;
 use App\Models\WorkType;
 use Illuminate\Http\Request;
 use App\Models\AttendanceTime;
+use App\Models\DailyReportItem;
 
 class DailyReportController extends Controller
 {
@@ -272,6 +273,35 @@ class DailyReportController extends Controller
                 => $attendance?->end_time,
             ]);
         }
+        foreach ($request->item_name ?? [] as $index => $name) {
+
+            if (empty($name)) {
+                continue;
+            }
+
+            $quantity = $request->item_quantity[$index] ?? 1;
+            $unitPrice = 0;
+
+            DailyReportItem::create([
+
+                'daily_report_id' => $dailyReport->id,
+
+                'category' => $request->item_category[$index] ?? '貸出',
+
+                'name' => $name,
+
+                'quantity' => $quantity,
+
+                'unit' => $request->item_unit[$index] ?? null,
+
+                'unit_price' => $unitPrice,
+
+                'amount' => $quantity * $unitPrice,
+
+                'note' => $request->item_note[$index] ?? null,
+
+            ]);
+        }
 
         return redirect()
             ->route('daily-reports.index')
@@ -307,6 +337,11 @@ class DailyReportController extends Controller
         $workers = collect();
         $attendanceTimes =
             AttendanceTime::orderBy('name')->get();
+
+        $dailyReport->load([
+            'details',
+            'items',
+        ]);
 
         foreach ($employees as $employee) {
 
@@ -355,6 +390,7 @@ class DailyReportController extends Controller
          * 既存明細削除
          */
         $dailyReport->details()->delete();
+        $dailyReport->items()->delete();
 
         $dailyReport->load('site.client');
 
@@ -471,6 +507,27 @@ class DailyReportController extends Controller
 
                 'end_time'
                 => $attendance?->end_time,
+            ]);
+        }
+
+        foreach ($request->item_name ?? [] as $index => $name) {
+
+            if (!$name) {
+                continue;
+            }
+
+            DailyReportItem::create([
+
+                'daily_report_id' => $dailyReport->id,
+
+                'category' => $request->item_category[$index],
+
+                'name' => $name,
+
+                'quantity' => $request->item_quantity[$index],
+
+                'unit' => $request->item_unit[$index],
+
             ]);
         }
 

@@ -28,4 +28,9 @@ class DailyReport extends Model
     {
         return $this->hasMany(DailyReportDetail::class);
     }
+
+    public function items()
+    {
+        return $this->hasMany(DailyReportItem::class);
+    }
 }
