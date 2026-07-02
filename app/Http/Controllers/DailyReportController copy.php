@@ -148,21 +148,191 @@ class DailyReportController extends Controller
             'work_date' => 'required|date',
         ]);
 
-        $dailyReport = $this->createDailyReport($request);
+        $duplicateWorkers = [];
 
-        $duplicateWorkers = $this->saveWorkers(
-            $request,
-            $dailyReport
+        $dailyReport = DailyReport::firstOrCreate(
+            [
+                'site_id'   => $request->site_id,
+                'work_date' => $request->work_date,
+            ],
+            [
+                'note' => $request->note,
+            ]
         );
 
-        $this->saveItems(
-            $request,
-            $dailyReport
-        );
+        foreach ($request->worker as $index => $worker) {
+
+            if (!$worker) {
+                continue;
+            }
+
+            $type = explode('_', $worker)[0];
+
+            $id = explode('_', $worker)[1];
+
+            $dailyReport->load('site.client');
+
+            $client = $dailyReport->site->client;
+
+            $employeeId = null;
+            $subcontractorId = null;
+            $attendance = null;
+
+            if ($type === 'employee') {
+
+                $employeeId = $id;
+            } else {
+
+                $subcontractorId = $id;
+            }
+
+            $exists = DailyReportDetail::where(
+                'daily_report_id',
+                $dailyReport->id
+            );
+
+            if ($employeeId) {
+
+                $exists->where('employee_id', $employeeId);
+            }
+
+            if ($subcontractorId) {
+
+                $exists->where('subcontractor_id', $subcontractorId);
+            }
+
+            if ($exists->exists()) {
+
+                $duplicateWorkers[] = $worker;
+                continue;
+            }
+
+            $workType = WorkType::find($request->work_type_id[$index]);
+
+            $unitPrice = 0;
+
+            switch ($workType->name) {
+
+                case '解体工':
+                    $unitPrice = $client->demolition_unit_price;
+                    break;
+
+                case '重機':
+                    $unitPrice = $client->heavy_equipment_unit_price;
+                    break;
+
+                case '重機2':
+                    $unitPrice = $client->heavy_equipment2_unit_price;
+                    break;
+
+                case 'はつり':
+                    $unitPrice = $client->chipping_unit_price;
+                    break;
+
+                case '石綿':
+                    $unitPrice = $client->asbestos_unit_price;
+                    break;
+
+                case 'トラック':
+                    $unitPrice = $client->truck_unit_price;
+                    break;
+
+                case 'ユニック':
+                    $unitPrice = $client->unic_unit_price;
+                    break;
+            }
+
+            $manHours = $request->man_hours[$index];
+
+            $overtimeHours = $request->overtime_hours[$index] ?? 0;
+
+            /**
+             * 基本人工
+             */
+            $sales = $unitPrice * $manHours;
+
+            /**
+             * 残業
+             * 1人工/8*1.25
+             */
+            $overtimePrice = ($unitPrice / 8) * 1.25;
+
+            $sales += $overtimePrice * $overtimeHours;
+
+            if (!empty($request->attendance_time_id[$index])) {
+
+                $attendance = AttendanceTime::find(
+                    $request->attendance_time_id[$index]
+                );
+            }
+
+            DailyReportDetail::create([
+
+                'daily_report_id' => $dailyReport->id,
+
+                'employee_id' => $employeeId,
+
+                'subcontractor_id' => $subcontractorId,
+
+                'work_type_id' => $request->work_type_id[$index],
+
+                'man_hours' => $request->man_hours[$index],
+
+                'overtime_hours' => $request->overtime_hours[$index] ?? 0,
+
+                'transportation_cost' => $request->transportation_cost[$index] ?? 0,
+
+                'expressway_cost' => $request->expressway_cost[$index] ?? 0,
+
+                'parking_cost' => $request->parking_cost[$index] ?? 0,
+
+                'sales' => $sales,
+
+                'note' => $request->detail_note[$index] ?? null,
+
+                'attendance_time_name'
+                => $attendance?->name,
+
+                'start_time'
+                => $attendance?->start_time,
+
+                'end_time'
+                => $attendance?->end_time,
+            ]);
+        }
+        foreach ($request->item_name ?? [] as $index => $name) {
+
+            if (empty($name)) {
+                continue;
+            }
+
+            $quantity = $request->item_quantity[$index] ?? 1;
+            $unitPrice = 0;
+
+            DailyReportItem::create([
+
+                'daily_report_id' => $dailyReport->id,
+
+                'category' => $request->item_category[$index] ?? '貸出',
+
+                'name' => $name,
+
+                'quantity' => $quantity,
+
+                'unit' => $request->item_unit[$index] ?? null,
+
+                'unit_price' => $unitPrice,
+
+                'amount' => $quantity * $unitPrice,
+
+                'note' => $request->item_note[$index] ?? null,
+
+            ]);
+        }
 
         $message = '日報を登録しました';
 
-        if (!empty($duplicateWorkers)) {
+        if (count($duplicateWorkers)) {
 
             $message .= '（一部重複した作業者は登録されませんでした）';
         }
@@ -171,8 +341,6 @@ class DailyReportController extends Controller
             ->route('daily-reports.index')
             ->with('success', $message);
     }
-
-
 
     public function show(DailyReport $dailyReport)
     {
@@ -332,10 +500,14 @@ class DailyReportController extends Controller
 
             $sales += $overtimePrice * $overtimeHours;
 
-            $attendance = $this->findAttendance(
-                $request,
-                $index
-            );
+            $attendance = null;
+
+            if (!empty($request->attendance_time_id[$index])) {
+
+                $attendance = AttendanceTime::find(
+                    $request->attendance_time_id[$index]
+                );
+            }
 
             DailyReportDetail::create([
 
@@ -396,238 +568,5 @@ class DailyReportController extends Controller
         return redirect()
             ->route('daily-reports.show', $dailyReport)
             ->with('success', '日報を更新しました');
-    }
-
-    private function createDailyReport(Request $request)
-    {
-        return DailyReport::firstOrCreate(
-            [
-                'site_id' => $request->site_id,
-                'work_date' => $request->work_date,
-            ],
-            [
-                'note' => $request->note,
-            ]
-        );
-    }
-
-    private function saveWorkers(
-        Request $request,
-        DailyReport $dailyReport
-    ) {
-
-        $duplicateWorkers = [];
-
-        $dailyReport->load('site.client');
-
-        $client = $dailyReport->site->client;
-
-        foreach ($request->worker as $index => $worker) {
-
-            if (!$worker) {
-                continue;
-            }
-
-            [$type, $id] = explode('_', $worker);
-
-            $employeeId = $type === 'employee'
-                ? $id
-                : null;
-
-            $subcontractorId = $type === 'subcontractor'
-                ? $id
-                : null;
-
-            if (
-                $this->isDuplicateWorker(
-                    $dailyReport,
-                    $employeeId,
-                    $subcontractorId
-                )
-            ) {
-
-                $duplicateWorkers[] = $worker;
-
-                continue;
-            }
-
-            $this->createDetail(
-                $request,
-                $dailyReport,
-                $client,
-                $employeeId,
-                $subcontractorId,
-                $index
-            );
-        }
-
-        return $duplicateWorkers;
-    }
-
-    private function isDuplicateWorker(
-        DailyReport $dailyReport,
-        $employeeId,
-        $subcontractorId
-    ) {
-
-        $query = DailyReportDetail::where(
-            'daily_report_id',
-            $dailyReport->id
-        );
-
-        if ($employeeId) {
-
-            $query->where(
-                'employee_id',
-                $employeeId
-            );
-        }
-
-        if ($subcontractorId) {
-
-            $query->where(
-                'subcontractor_id',
-                $subcontractorId
-            );
-        }
-
-        return $query->exists();
-    }
-
-    private function createDetail(
-        Request $request,
-        DailyReport $dailyReport,
-        $client,
-        $employeeId,
-        $subcontractorId,
-        $index
-    ) {
-
-        $attendance = $this->findAttendance(
-            $request,
-            $index
-        );
-
-        $workType = WorkType::find(
-            $request->work_type_id[$index]
-        );
-
-        $unitPrice = $this->getUnitPrice(
-            $client,
-            $workType
-        );
-
-        $manHours = $request->man_hours[$index];
-
-        $overtimeHours = $request->overtime_hours[$index] ?? 0;
-
-        $sales = $this->calculateSales(
-            $unitPrice,
-            $manHours,
-            $overtimeHours
-        );
-
-        DailyReportDetail::create([
-
-            'daily_report_id' => $dailyReport->id,
-            'employee_id' => $employeeId,
-            'subcontractor_id' => $subcontractorId,
-            'work_type_id' => $request->work_type_id[$index],
-            'man_hours' => $manHours,
-            'overtime_hours' => $overtimeHours,
-            'transportation_cost' => $request->transportation_cost[$index] ?? 0,
-            'expressway_cost' => $request->expressway_cost[$index] ?? 0,
-            'parking_cost' => $request->parking_cost[$index] ?? 0,
-            'sales' => $sales,
-            'note' => $request->detail_note[$index] ?? null,
-            'attendance_time_name' => $attendance?->name,
-            'start_time' => $attendance?->start_time,
-            'end_time' => $attendance?->end_time,
-        ]);
-    }
-
-    private function saveItems(
-        Request $request,
-        DailyReport $dailyReport
-    ) {
-
-        foreach ($request->item_name ?? [] as $index => $name) {
-
-            if (empty($name)) {
-
-                continue;
-            }
-
-            $quantity = $request->item_quantity[$index] ?? 1;
-
-            DailyReportItem::create([
-
-                'daily_report_id' => $dailyReport->id,
-
-                'category' => $request->item_category[$index] ?? '貸出',
-
-                'name' => $name,
-
-                'quantity' => $quantity,
-
-                'unit' => $request->item_unit[$index] ?? null,
-
-                'unit_price' => 0,
-
-                'amount' => 0,
-
-                'note' => $request->item_note[$index] ?? null,
-
-            ]);
-        }
-    }
-
-    private function calculateSales(
-        float $unitPrice,
-        float $manHours,
-        float $overtimeHours
-    ): float {
-
-        $sales = $unitPrice * $manHours;
-
-        $sales += ($unitPrice / 8) * 1.25 * $overtimeHours;
-
-        return $sales;
-    }
-
-    private function findAttendance(
-        Request $request,
-        int $index
-    ): ?AttendanceTime {
-
-        if (empty($request->attendance_time_id[$index])) {
-            return null;
-        }
-
-        return AttendanceTime::find(
-            $request->attendance_time_id[$index]
-        );
-    }
-
-    private function getUnitPrice($client, WorkType $workType): int
-    {
-        return match ($workType->name) {
-
-            '解体工' => $client->demolition_unit_price,
-
-            '重機' => $client->heavy_equipment_unit_price,
-
-            '重機2' => $client->heavy_equipment2_unit_price,
-
-            'はつり' => $client->chipping_unit_price,
-
-            '石綿' => $client->asbestos_unit_price,
-
-            'トラック' => $client->truck_unit_price,
-
-            'ユニック' => $client->unic_unit_price,
-
-            default => 0,
-        };
     }
 }
