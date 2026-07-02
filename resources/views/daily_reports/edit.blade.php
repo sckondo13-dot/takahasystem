@@ -139,6 +139,10 @@
 
                                 {{-- 作業者 --}}
                                 <td class="border p-2">
+                                    <input
+                                        type="hidden"
+                                        name="detail_id[]"
+                                        value="{{ $detail->id }}">
 
                                     <select name="worker[]"
                                         class="w-full border rounded p-2">
