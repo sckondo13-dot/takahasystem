@@ -312,19 +312,19 @@
 
                         <tr>
 
-                            <th class="border p-2 w-2/5">
+                            <th class="border p-2">
                                 項目名
                             </th>
 
-                            <th class="border p-2 w-2/5">
+                            <th class="border p-2">
                                 カテゴリ
                             </th>
 
-                            <th class="border p-2 w-1/5">
+                            <th class="border p-2">
                                 数量
                             </th>
 
-                            <th class="border p-2 w-1/5">
+                            <th class="border p-2">
                                 単位
                             </th>
 
