@@ -6,44 +6,58 @@
             現場別月報
         </h1>
 
-        <form class="flex flex-wrap gap-3 mb-6">
+        <div class="bg-white border rounded p-5 mb-5">
 
-            <select
-                name="site_id"
-                class="border rounded p-2">
+            <form class="flex flex-wrap gap-3 items-end">
+                <div>
+                    <label class="block mb-1">
+                        現場選択
+                    </label>
 
-                <option value="">
-                    現場選択
-                </option>
+                    <select
+                        name="site_id"
+                        class="border rounded p-2">
 
-                @foreach($sites as $s)
+                        <option value="">
+                            選択してください
+                        </option>
 
-                <option
-                    value="{{ $s->id }}"
-                    {{ $siteId==$s->id?'selected':'' }}>
+                        @foreach($sites as $s)
 
-                    {{ $s->name }}
+                        <option
+                            value="{{ $s->id }}"
+                            {{ $siteId==$s->id?'selected':'' }}>
 
-                </option>
+                            {{ $s->name }}
 
-                @endforeach
+                        </option>
 
-            </select>
+                        @endforeach
 
-            <input
-                type="month"
-                name="month"
-                value="{{ $month->format('Y-m') }}"
-                class="border rounded p-2">
+                    </select>
+                </div>
+                <div>
+                    <label class="block mb-1">
+                        月
+                    </label>
+                    <input
+                        type="month"
+                        name="month"
+                        value="{{ $month->format('Y-m') }}"
+                        class="border rounded p-2">
+                </div>
+                <div>
+                    <button
+                        class="bg-blue-600 text-white px-5 py-2 rounded">
 
-            <button
-                class="bg-blue-600 text-white px-5 rounded">
+                        表示
 
-                表示
+                    </button>
+                </div>
 
-            </button>
 
-        </form>
+            </form>
+        </div>
 
         @if($site)
 

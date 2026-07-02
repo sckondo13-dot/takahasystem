@@ -13,7 +13,13 @@
                 <!-- Navigation Links -->
                 <div class="hidden space-x-8 sm:-my-px sm:ms-10 sm:flex">
                     <x-nav-link :href="route('daily-reports.index')">
-                        {{ __('日報入力') }}
+                        {{ __('日報') }}
+                    </x-nav-link>
+                    <x-nav-link :href="route('attendance.index')">
+                        {{ __('個人出勤簿') }}
+                    </x-nav-link>
+                    <x-nav-link :href="route('site-reports.monthly')">
+                        {{ __('現場明細') }}
                     </x-nav-link>
                 </div>
             </div>
@@ -41,7 +47,7 @@
                             個人出勤簿
                         </x-dropdown-link>
                         <x-dropdown-link :href="route('site-reports.monthly')">
-                            現場別月報
+                            現場明細
                         </x-dropdown-link>
                         <x-dropdown-link :href="route('sites.index')">
                             現場管理

@@ -49,6 +49,11 @@ Route::middleware('auth')->group(function () {
         '/site-reports/monthly',
         [SiteReportController::class, 'monthly']
     )->name('site-reports.monthly');
+
+    Route::get(
+        '/attendance/pdf',
+        [AttendanceController::class, 'pdf']
+    )->name('attendance.pdf');
 });
 
 require __DIR__ . '/auth.php';
