@@ -302,7 +302,7 @@
 
                                 <td class="border p-2 text-right">
 
-                                    {{ $item->quantity }}
+                                    {{ $item->quantity + 0 }}
 
                                 </td>
 

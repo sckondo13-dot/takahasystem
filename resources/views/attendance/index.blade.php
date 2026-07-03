@@ -175,8 +175,8 @@
 
                             {{ $detail->dailyReport->work_date->format('Y/m/d') }}
 
-                            （{{ ['日','月','火','水','木','金','土']
-                [$detail->dailyReport->work_date->dayOfWeek] }}）
+                            ({{ ['日','月','火','水','木','金','土']
+                [$detail->dailyReport->work_date->dayOfWeek] }})
 
                         </td>
 
