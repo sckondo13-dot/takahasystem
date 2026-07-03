@@ -29,6 +29,16 @@
                     {{ $message }}
                 </div>
                 @enderror
+                <div>
+                    <label>在職状況</label>
+
+                    <select name="status" class="form-select">
+
+                        <option value="在職">在職</option>
+                        <option value="退職">退職</option>
+
+                    </select>
+                </div>
                 <div class="mt-6">
 
                     <h3 class="font-bold mb-3">

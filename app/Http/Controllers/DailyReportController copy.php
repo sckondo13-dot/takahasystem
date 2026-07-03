@@ -102,7 +102,9 @@ class DailyReportController extends Controller
             ->orderBy('name')
             ->get();
 
-        $employees = Employee::orderBy('name')->get();
+        $employees = Employee::where('status', '在職')
+            ->orderBy('name')
+            ->get();
 
         $subcontractors = Subcontractor::orderBy('name')->get();
 

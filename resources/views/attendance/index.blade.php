@@ -36,7 +36,7 @@
                                 value="{{ $employee->id }}"
                                 {{ $employeeId == $employee->id ? 'selected' : '' }}>
 
-                                {{ $employee->name }}
+                                {{ $employee->status == '退職'? '【退職済】'.$employee->name: $employee->name }}
 
                             </option>
 

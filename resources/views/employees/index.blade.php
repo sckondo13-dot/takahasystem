@@ -30,6 +30,7 @@
                 <tr>
                     <th class="border p-2">ID</th>
                     <th class="border p-2">名前</th>
+                    <th class="border p-2">勤務状況</th>
                     <th class="border p-2">操作</th>
                 </tr>
 
@@ -47,6 +48,23 @@
 
                     <td class="border p-2">
                         {{ $employee->name }}
+                    </td>
+                    <td class="border p-2">
+
+                        @if($employee->status=='在職')
+
+                        <span class="text-green-600 font-bold">
+                            在職
+                        </span>
+
+                        @else
+
+                        <span class="text-red-600 font-bold">
+                            退職
+                        </span>
+
+                        @endif
+
                     </td>
 
                     <td class="border p-2">

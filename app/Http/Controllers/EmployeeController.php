@@ -45,6 +45,7 @@ class EmployeeController extends Controller
 
         $employee = Employee::create([
             'name' => $request->name,
+            'status' => $request->status,
         ]);
 
         foreach ($request->allowances ?? [] as $allowanceId) {
@@ -113,6 +114,7 @@ class EmployeeController extends Controller
 
         $employee->update([
             'name' => $request->name,
+            'status' => $request->status,
         ]);
 
         $today = today();
