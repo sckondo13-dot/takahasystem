@@ -279,7 +279,7 @@
                                     <input type="text"
                                         name="detail_note[]"
                                         class="w-48 border rounded p-2"
-                                        value="{{ $detail->detail_note }}">
+                                        value="{{ $detail->note }}">
 
                                 </td>
 
@@ -608,6 +608,92 @@
                         e.target.closest('tr').remove();
                     }
                 }
+            });
+
+            const addFreeItem = document.getElementById('addFreeItem');
+            const itemTableBody = document.getElementById('itemTableBody');
+
+            /*
+            |--------------------------------------------------------------------------
+            | 現場費追加
+            |--------------------------------------------------------------------------
+            */
+            addFreeItem.addEventListener('click', () => {
+
+                const firstRow = itemTableBody.querySelector('tr');
+
+                const newRow = firstRow.cloneNode(true);
+
+                newRow.querySelectorAll('input').forEach(input => {
+
+                    switch (input.name) {
+
+                        case 'item_name[]':
+                            input.value = '';
+                            break;
+
+                        case 'item_quantity[]':
+                            input.value = 1;
+                            break;
+
+                        default:
+                            input.value = '';
+                    }
+
+                });
+
+                newRow.querySelectorAll('select').forEach(select => {
+
+                    select.selectedIndex = 0;
+
+                });
+
+                itemTableBody.appendChild(newRow);
+
+            });
+
+            /*
+            |--------------------------------------------------------------------------
+            | 現場費削除
+            |--------------------------------------------------------------------------
+            */
+            document.addEventListener('click', function(e) {
+
+                if (e.target.classList.contains('removeItemRow')) {
+
+                    const rows = itemTableBody.querySelectorAll('tr');
+
+                    if (rows.length > 1) {
+
+                        e.target.closest('tr').remove();
+
+                    } else {
+
+                        // 最後の1行は削除せず初期化
+                        e.target.closest('tr').querySelectorAll('input').forEach(input => {
+
+                            switch (input.name) {
+
+                                case 'item_quantity[]':
+                                    input.value = 1;
+                                    break;
+
+                                default:
+                                    input.value = '';
+                            }
+
+                        });
+
+                        e.target.closest('tr').querySelectorAll('select').forEach(select => {
+
+                            select.selectedIndex = 0;
+
+                        });
+
+                    }
+
+                }
+
             });
 
         });
