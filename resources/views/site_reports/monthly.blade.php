@@ -7,56 +7,71 @@
         </h1>
 
         <div class="bg-white border rounded p-5 mb-5">
+            <div class="flex flex-wrap justify-between items-end gap-4">
 
-            <form class="flex flex-wrap gap-3 items-end">
-                <div>
-                    <label class="block mb-1">
-                        現場選択
-                    </label>
+                <form class="flex flex-wrap gap-3 items-end">
+                    <div>
+                        <label class="block mb-1">
+                            現場選択
+                        </label>
 
-                    <select
-                        name="site_id"
-                        class="border rounded p-2">
+                        <select
+                            name="site_id"
+                            class="border rounded p-2">
 
-                        <option value="">
-                            選択してください
-                        </option>
+                            <option value="">
+                                選択してください
+                            </option>
 
-                        @foreach($sites as $s)
+                            @foreach($sites as $s)
 
-                        <option
-                            value="{{ $s->id }}"
-                            {{ $siteId==$s->id?'selected':'' }}>
+                            <option
+                                value="{{ $s->id }}"
+                                {{ $siteId==$s->id?'selected':'' }}>
 
-                            {{ $s->name }}
+                                {{ $s->name }}
 
-                        </option>
+                            </option>
 
-                        @endforeach
+                            @endforeach
 
-                    </select>
-                </div>
-                <div>
-                    <label class="block mb-1">
-                        月
-                    </label>
-                    <input
-                        type="month"
-                        name="month"
-                        value="{{ $month->format('Y-m') }}"
-                        class="border rounded p-2">
-                </div>
-                <div>
-                    <button
-                        class="bg-blue-600 text-white px-5 py-2 rounded">
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block mb-1">
+                            月
+                        </label>
+                        <input
+                            type="month"
+                            name="month"
+                            value="{{ $month->format('Y-m') }}"
+                            class="border rounded p-2">
+                    </div>
+                    <div>
+                        <button
+                            class="bg-blue-600 text-white px-5 py-2 rounded">
 
-                        表示
+                            表示
 
-                    </button>
-                </div>
+                        </button>
+                    </div>
 
 
-            </form>
+                </form>
+
+                @if($site)
+
+                <a
+                    href="{{ route('site-reports.monthly.pdf', ['site_id' => $siteId,'month' => $month->format('Y-m')]) }}"
+                    target="_blank"
+                    class="bg-red-600 hover:bg-red-700 text-white px-5 py-2 rounded">
+
+                    📄 PDF出力
+
+                </a>
+
+                @endif
+            </div>
         </div>
 
         @if($site)

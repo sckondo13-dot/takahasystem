@@ -10,12 +10,20 @@
         }
 
         @font-face {
-            font-family: ipa;
-            src: url("{{ resource_path('fonts/ipaexg.ttf') }}") format("truetype");
+            font-family: "Noto Sans JP";
+            font-weight: 400;
+            src: url("{{ resource_path('fonts/NotoSansJP-Regular.ttf') }}") format("truetype");
         }
 
+        @font-face {
+            font-family: "Noto Sans JP";
+            font-weight: 700;
+            src: url("{{ resource_path('fonts/NotoSansJP-Bold.ttf') }}") format("truetype");
+        }
+
+
         body {
-            font-family: ipa;
+            font-family: "Noto Sans JP";
             font-size: 10px;
             color: #222;
             margin: 0;
@@ -299,9 +307,9 @@
 
                 <th width="10%">日付</th>
 
-                <th width="22%">現場</th>
+                <th width="18%">現場</th>
 
-                <th width="10%">作業</th>
+                <th width="9%">作業</th>
 
                 <th width="7%">出勤</th>
 
@@ -353,7 +361,12 @@
             |--------------------------------------------------------------------------
             */
 
-            $start=$detail->start_time;
+            $start = '';
+
+            if ($detail->start_time) {
+            $start = \Carbon\Carbon::parse($detail->start_time)
+            ->format('H:i');
+            }
 
             $end=$detail->end_time;
 

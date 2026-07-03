@@ -6,6 +6,7 @@ use App\Models\DailyReport;
 use App\Models\Site;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
+use Spatie\LaravelPdf\Facades\Pdf;
 
 class SiteReportController extends Controller
 {
@@ -75,6 +76,25 @@ class SiteReportController extends Controller
 
     public function monthly(Request $request)
     {
+        return view(
+            'site_reports.monthly',
+            $this->getMonthlyReportData($request)
+        );
+    }
+
+    public function monthlyPdf(Request $request)
+    {
+        return Pdf::view(
+            'site_reports.pdf',
+            $this->getMonthlyReportData($request)
+        )
+            ->landscape()
+            ->format('A4')
+            ->name('現場明細.pdf');
+    }
+
+    private function getMonthlyReportData(Request $request)
+    {
         $sites = Site::orderBy('name')->get();
 
         $siteId = $request->site_id;
@@ -87,6 +107,7 @@ class SiteReportController extends Controller
         $end   = $month->copy()->endOfMonth();
 
         $dates = collect();
+
         $reportMap = [];
 
         $site = null;
@@ -138,43 +159,18 @@ class SiteReportController extends Controller
                         ->sum('man_hours');
                 }
 
-                $row['total_man'] =
-                    $report->details->sum('man_hours');
-
-                $row['sales'] =
-                    $report->details->sum('sales');
-
-                $row['transportation'] =
-                    $report->details->sum('transportation_cost');
-
-                $row['expressway'] =
-                    $report->details->sum('expressway_cost');
-
-                $row['parking'] =
-                    $report->details->sum('parking_cost');
-
-                $row['items'] =
-                    $report->items;
-
-                $row['overtime'] =
-                    $report->details->sum('overtime_hours');
-
-                $row['transportation'] =
-                    $report->details->sum('transportation_cost');
-
-                $row['expressway'] =
-                    $report->details->sum('expressway_cost');
-
-                $row['parking'] =
-                    $report->details->sum('parking_cost');
+                $row['total_man'] = $report->details->sum('man_hours');
+                $row['sales'] = $report->details->sum('sales');
+                $row['overtime'] = $report->details->sum('overtime_hours');
+                $row['transportation'] = $report->details->sum('transportation_cost');
+                $row['expressway'] = $report->details->sum('expressway_cost');
+                $row['parking'] = $report->details->sum('parking_cost');
+                $row['items'] = $report->items;
 
                 $reportMap[$key] = $row;
 
                 $totalSales += $row['sales'];
                 $totalManHours += $row['total_man'];
-                $totalTransportation += $row['transportation'];
-                $totalExpressway += $row['expressway'];
-                $totalParking += $row['parking'];
                 $totalOvertime += $row['overtime'];
                 $totalTransportation += $row['transportation'];
                 $totalExpressway += $row['expressway'];
@@ -182,7 +178,7 @@ class SiteReportController extends Controller
             }
         }
 
-        return view('site_reports.monthly', compact(
+        return compact(
             'sites',
             'siteId',
             'month',
@@ -195,6 +191,6 @@ class SiteReportController extends Controller
             'totalExpressway',
             'totalParking',
             'totalOvertime',
-        ));
+        );
     }
 }

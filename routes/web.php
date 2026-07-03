@@ -51,6 +51,11 @@ Route::middleware('auth')->group(function () {
     )->name('site-reports.monthly');
 
     Route::get(
+        '/site-reports/monthly/pdf',
+        [SiteReportController::class, 'monthlyPdf']
+    )->name('site-reports.monthly.pdf');
+
+    Route::get(
         '/attendance/pdf',
         [AttendanceController::class, 'pdf']
     )->name('attendance.pdf');
