@@ -61,14 +61,31 @@
 
                 @if($site)
 
-                <a
-                    href="{{ route('site-reports.monthly.pdf', ['site_id' => $siteId,'month' => $month->format('Y-m')]) }}"
-                    target="_blank"
-                    class="bg-red-600 hover:bg-red-700 text-white px-5 py-2 rounded">
+                <div class="flex gap-2">
 
-                    📄 PDF出力
+                    <a
+                        href="{{ route('site-reports.monthly.pdf',[
+        'site_id'=>$siteId,
+        'month'=>$month->format('Y-m')
+    ]) }}"
+                        target="_blank"
+                        class="bg-gray-700 hover:bg-gray-800 text-white px-5 py-2 rounded shadow">
 
-                </a>
+                        👁 PDF表示
+
+                    </a>
+
+                    <a
+                        href="{{ route('site-reports.monthly.download',[
+        'site_id'=>$siteId,
+        'month'=>$month->format('Y-m')
+    ]) }}"
+                        class="bg-red-600 hover:bg-red-700 text-white px-5 py-2 rounded shadow">
+
+                        📥 PDFダウンロード
+
+                    </a>
+                </div>
 
                 @endif
             </div>

@@ -6,7 +6,7 @@ use App\Models\DailyReport;
 use App\Models\Site;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
-use Spatie\LaravelPdf\Facades\Pdf;
+use App\Services\Pdf\SiteMonthlyPdfService;
 
 class SiteReportController extends Controller
 {
@@ -82,15 +82,22 @@ class SiteReportController extends Controller
         );
     }
 
-    public function monthlyPdf(Request $request)
-    {
-        return Pdf::view(
-            'site_reports.pdf',
+    public function monthlyPdf(
+        Request $request,
+        SiteMonthlyPdfService $pdf
+    ) {
+        return $pdf->preview(
             $this->getMonthlyReportData($request)
-        )
-            ->landscape()
-            ->format('A4')
-            ->name('現場明細.pdf');
+        );
+    }
+
+    public function monthlyDownload(
+        Request $request,
+        SiteMonthlyPdfService $pdf
+    ) {
+        return $pdf->downloadPdf(
+            $this->getMonthlyReportData($request)
+        );
     }
 
     private function getMonthlyReportData(Request $request)

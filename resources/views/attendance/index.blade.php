@@ -36,7 +36,9 @@
                                 value="{{ $employee->id }}"
                                 {{ $employeeId == $employee->id ? 'selected' : '' }}>
 
-                                {{ $employee->status == '退職'? '【退職済】'.$employee->name: $employee->name }}
+                                {{ $employee->status == '退職'
+                            ? '【退職済】'.$employee->name
+                            : $employee->name }}
 
                             </option>
 
@@ -76,17 +78,34 @@
 
                 @if($employeeId)
 
-                <a
-                    href="{{ route('attendance.pdf',[
-                'employee_id'=>$employeeId,
-                'month'=>$month->format('Y-m')
-            ]) }}"
-                    target="_blank"
-                    class="bg-red-600 hover:bg-red-700 text-white px-5 py-2 rounded shadow">
+                <div class="flex gap-2">
 
-                    📄 PDF出力
+                    {{-- PDF表示 --}}
+                    <a
+                        href="{{ route('attendance.pdf',[
+                    'employee_id'=>$employeeId,
+                    'month'=>$month->format('Y-m')
+                ]) }}"
+                        target="_blank"
+                        class="bg-gray-700 hover:bg-gray-800 text-white px-5 py-2 rounded shadow">
 
-                </a>
+                        👁 PDF表示
+
+                    </a>
+
+                    {{-- PDFダウンロード --}}
+                    <a
+                        href="{{ route('attendance.pdf.download',[
+                    'employee_id'=>$employeeId,
+                    'month'=>$month->format('Y-m')
+                ]) }}"
+                        class="bg-red-600 hover:bg-red-700 text-white px-5 py-2 rounded shadow">
+
+                        📥 PDFダウンロード
+
+                    </a>
+
+                </div>
 
                 @endif
 

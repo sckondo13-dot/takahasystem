@@ -1,5 +1,9 @@
 {
     "ipa": {
         "normal": "ipa_normal_4d28cab563ccbe7269b556283cc51012"
+    },
+    "noto sans jp": {
+        "normal": "C:\\laragon\\www\\takahasystem\\storage\\fonts\/noto_sans_jp_normal_4eb26b097097e8e3ef4a5e252509d184",
+        "bold": "noto_sans_jp_bold_f6225b3fe9a2785dcc76f07704f61760"
     }
 }
