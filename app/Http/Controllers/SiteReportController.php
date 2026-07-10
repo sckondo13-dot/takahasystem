@@ -119,6 +119,9 @@ class SiteReportController extends Controller
 
         $site = null;
 
+        $itemList = collect();
+        $itemTotals = [];
+
         $totalSales = 0;
         $totalManHours = 0;
         $totalTransportation = 0;
@@ -126,9 +129,39 @@ class SiteReportController extends Controller
         $totalParking = 0;
         $totalOvertime = 0;
 
+        $visibleTypes = [];
+        $typeTotals = [];
+        $typeSalesTotals = [];
+        $unitPrices = [];
+
         if ($siteId) {
 
             $site = Site::with('client')->findOrFail($siteId);
+
+            $workTypes = [
+                '解体工',
+                '重機',
+                '重機２',
+                'ガス工',
+                'はつり',
+                '石綿',
+                'トラック',
+            ];
+
+            foreach ($workTypes as $type) {
+                $typeTotals[$type] = 0;
+                $typeSalesTotals[$type] = 0;
+            }
+
+            $unitPrices = [
+                '解体工'   => $site->client->demolition_unit_price,
+                '重機'     => $site->client->heavy_equipment_unit_price,
+                '重機２'   => $site->client->heavy_equipment2_unit_price,
+                'ガス工'   => 0,
+                'はつり'   => $site->client->chipping_unit_price,
+                '石綿'     => $site->client->asbestos_unit_price,
+                'トラック' => $site->client->truck_unit_price,
+            ];
 
             for ($date = $start->copy(); $date <= $end; $date->addDay()) {
                 $dates->push($date->copy());
@@ -145,25 +178,22 @@ class SiteReportController extends Controller
 
             foreach ($reports as $report) {
 
-                $key = $report->work_date->format('Y-m-d');
+                $dateKey = $report->work_date->format('Y-m-d');
 
                 $row = [];
 
-                foreach (
-                    [
-                        '解体工',
-                        '重機',
-                        '重機２',
-                        'ガス工',
-                        'はつり',
-                        '石綿',
-                        'トラック'
-                    ] as $type
-                ) {
+                foreach ($workTypes as $type) {
 
-                    $row[$type] = $report->details
+                    $hours = $report->details
                         ->where('workType.name', $type)
                         ->sum('man_hours');
+
+                    $row[$type] = $hours;
+
+                    $typeTotals[$type] += $hours;
+
+                    $typeSalesTotals[$type] +=
+                        $hours * ($unitPrices[$type] ?? 0);
                 }
 
                 $row['total_man'] = $report->details->sum('man_hours');
@@ -174,7 +204,30 @@ class SiteReportController extends Controller
                 $row['parking'] = $report->details->sum('parking_cost');
                 $row['items'] = $report->items;
 
-                $reportMap[$key] = $row;
+                foreach ($report->items as $item) {
+
+                    $itemList->push([
+                        'date' => $report->work_date,
+                        'name' => $item->name,
+                        'quantity' => $item->quantity,
+                        'unit' => $item->unit,
+                    ]);
+
+                    $itemKey = $item->name . '_' . $item->unit;
+
+                    if (!isset($itemTotals[$itemKey])) {
+
+                        $itemTotals[$itemKey] = [
+                            'name' => $item->name,
+                            'unit' => $item->unit,
+                            'quantity' => 0,
+                        ];
+                    }
+
+                    $itemTotals[$itemKey]['quantity'] += $item->quantity;
+                }
+
+                $reportMap[$dateKey] = $row;
 
                 $totalSales += $row['sales'];
                 $totalManHours += $row['total_man'];
@@ -182,6 +235,13 @@ class SiteReportController extends Controller
                 $totalTransportation += $row['transportation'];
                 $totalExpressway += $row['expressway'];
                 $totalParking += $row['parking'];
+            }
+
+            foreach ($typeTotals as $type => $total) {
+
+                if ($total > 0) {
+                    $visibleTypes[] = $type;
+                }
             }
         }
 
@@ -192,12 +252,21 @@ class SiteReportController extends Controller
             'site',
             'dates',
             'reportMap',
+
+            'visibleTypes',
+            'typeTotals',
+            'unitPrices',
+            'typeSalesTotals',
+
             'totalSales',
             'totalManHours',
             'totalTransportation',
             'totalExpressway',
             'totalParking',
             'totalOvertime',
+
+            'itemList',
+            'itemTotals',
         );
     }
 }

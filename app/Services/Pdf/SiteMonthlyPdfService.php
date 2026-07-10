@@ -13,7 +13,7 @@ class SiteMonthlyPdfService extends BasePdfService
             'pdf.site-monthly',
             $data,
             'a4',
-            'landscape'
+            'portrait'
         );
     }
 

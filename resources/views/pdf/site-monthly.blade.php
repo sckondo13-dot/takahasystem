@@ -60,14 +60,6 @@
 @endpush
 @section('content')
 
-<div class="company">
-    髙橋興業
-</div>
-
-<h1>
-    現場別月報
-</h1>
-
 <table class="info">
 
     <tr>
@@ -107,23 +99,18 @@
 
             <th style="width:55px;">日付</th>
 
-            <th style="width:45px;">解体</th>
+            @foreach($visibleTypes as $type)
+            <th>{{ str_replace('工','',$type) }}</th>
+            @endforeach
 
-            <th style="width:45px;">重機</th>
+            <th style="width:30px;">人工</th>
+            @foreach($visibleTypes as $type)
+            <th style="width:55px;">
+                {{ str_replace('工','',$type) }}単価
+            </th>
+            @endforeach
 
-            <th style="width:45px;">重機2</th>
-
-            <th style="width:45px;">ガス</th>
-
-            <th style="width:45px;">はつり</th>
-
-            <th style="width:45px;">石綿</th>
-
-            <th style="width:45px;">トラック</th>
-
-            <th style="width:45px;">人工</th>
-
-            <th style="width:85px;">売上</th>
+            <th style="width:85px;">合計</th>
 
             <th style="width:45px;">残業</th>
 
@@ -163,25 +150,41 @@
 
             </td>
 
-            <td class="center">{{ $data['解体工'] ?? '' }}</td>
+            @foreach($visibleTypes as $type)
 
-            <td class="center">{{ $data['重機'] ?? '' }}</td>
+            <td class="center">
 
-            <td class="center">{{ $data['重機２'] ?? '' }}</td>
+                {{ $data[$type] ?? '' }}
 
-            <td class="center">{{ $data['ガス工'] ?? '' }}</td>
+            </td>
 
-            <td class="center">{{ $data['はつり'] ?? '' }}</td>
-
-            <td class="center">{{ $data['石綿'] ?? '' }}</td>
-
-            <td class="center">{{ $data['トラック'] ?? '' }}</td>
+            @endforeach
 
             <td class="center">
 
                 {{ $data['total_man'] ?? '' }}
 
             </td>
+
+            @foreach($visibleTypes as $type)
+            <td class="right">
+
+                @php
+                $priceMap = [
+                '解体工' => $site->client->demolition_unit_price,
+                '重機' => $site->client->heavy_equipment_unit_price,
+                '重機２' => $site->client->heavy_equipment2_unit_price,
+                'ガス工' => $site->client->gas_unit_price ?? 0,
+                'はつり' => $site->client->chipping_unit_price,
+                '石綿' => $site->client->asbestos_unit_price,
+                'トラック' => $site->client->truck_unit_price,
+                ];
+                @endphp
+
+                {{ number_format($priceMap[$type] ?? 0) }}
+
+            </td>
+            @endforeach
 
             <td class="right">
 
@@ -231,47 +234,149 @@
 
         </tr>
 
-        @if($data && $data['items']->count())
+        @endforeach
+
+    </tbody>
+    <tfoot>
+
+        <tr style="font-weight:bold;background:#eee;">
+
+            <td>合計</td>
+
+            @foreach($visibleTypes as $type)
+
+            <td class="center">
+
+                {{ number_format($typeTotals[$type],1) }}
+
+            </td>
+
+            @endforeach
+
+            <td class="center">{{ number_format($totalManHours,1) }}</td>
+
+            @foreach($visibleTypes as $type)
+            <td class="right">
+                {{ number_format($typeSalesTotals[$type]) }}
+            </td>
+            @endforeach
+
+            <td class="right">{{ number_format($totalSales) }}</td>
+
+            <td class="center">{{ number_format($totalOvertime,1) }}</td>
+
+            <td class="right">{{ number_format($totalTransportation) }}</td>
+
+            <td class="right">{{ number_format($totalExpressway) }}</td>
+
+            <td class="right">{{ number_format($totalParking) }}</td>
+
+        </tr>
+
+    </tfoot>
+
+</table>
+<br>
+@if($itemList->count())
+
+<br>
+
+<table>
+
+    <thead>
 
         <tr>
 
-            <td></td>
+            <th style="width:70px;">日付</th>
+            <th>貸出機材・資材</th>
+            <th style="width:90px;">数量</th>
 
-            <td colspan="13" class="items">
+        </tr>
 
-                貸出：
+    </thead>
 
-                @foreach($data['items'] as $item)
+    <tbody>
 
-                {{ $item->name }}
+        @foreach($itemList as $item)
 
-                ×
+        <tr>
 
-                {{ number_format($item->quantity) }}
+            <td class="center">
 
-                {{ $item->unit }}
+                {{ $item['date']->format('n/j') }}
 
-                @if(!$loop->last)
+            </td>
 
-                、
+            <td>
 
-                @endif
+                {{ $item['name'] }}
 
-                @endforeach
+            </td>
+
+            <td class="center">
+
+                {{ number_format($item['quantity']) }}
+                {{ $item['unit'] }}
 
             </td>
 
         </tr>
-
-        @endif
 
         @endforeach
 
     </tbody>
 
 </table>
+
+@endif
+@if(count($itemTotals))
+
 <br>
 
+<table>
+
+    <thead>
+
+        <tr>
+
+            <th colspan="2">
+
+                貸出・資材 合計
+
+            </th>
+
+        </tr>
+
+    </thead>
+
+    <tbody>
+
+        @foreach($itemTotals as $item)
+
+        <tr>
+
+            <td>
+
+                {{ $item['name'] }}
+
+            </td>
+
+            <td class="center">
+
+                {{ number_format($item['quantity']) }}
+                {{ $item['unit'] }}
+
+            </td>
+
+        </tr>
+
+        @endforeach
+
+    </tbody>
+
+</table>
+
+@endif
 <table class="summary">
 
     <tr>
@@ -331,33 +436,4 @@
     </tr>
 
 </table>
-<div class="stamp">
-
-    <table>
-
-        <tr>
-
-            <th>担当</th>
-
-            <th>確認</th>
-
-            <th>承認</th>
-
-        </tr>
-
-        <tr>
-
-            <td style="height:45px;"></td>
-
-            <td></td>
-
-            <td></td>
-
-        </tr>
-
-    </table>
-
-</div>
-
-<div class="clear"></div>
 @endsection
