@@ -698,5 +698,6 @@
 
         });
     </script>
+    
 
 </x-app-layout>

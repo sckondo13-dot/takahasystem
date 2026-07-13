@@ -39,13 +39,17 @@ class SiteController extends Controller
             'client_id' => 'required',
             'name' => 'required|max:255',
             'contract_type' => 'required',
+
+            'contract_start' => 'required|date',
+            'contract_end' => 'nullable|date|after_or_equal:contract_start',
         ]);
 
         Site::create([
             'client_id' => $request->client_id,
             'name' => $request->name,
             'contract_type' => $request->contract_type,
-            'status' => $request->status,
+            'contract_start' => $request->contract_start,
+            'contract_end' => $request->contract_end,
         ]);
 
         return redirect()
@@ -75,13 +79,17 @@ class SiteController extends Controller
             'client_id' => 'required',
             'name' => 'required|max:255',
             'contract_type' => 'required',
+
+            'contract_start' => 'required|date',
+            'contract_end' => 'nullable|date|after_or_equal:contract_start',
         ]);
 
         $site->update([
             'client_id' => $request->client_id,
             'name' => $request->name,
             'contract_type' => $request->contract_type,
-            'status'=>$request->status,
+            'contract_start' => $request->contract_start,
+            'contract_end' => $request->contract_end,
         ]);
 
         return redirect()

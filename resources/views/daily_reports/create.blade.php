@@ -24,6 +24,7 @@
                         </label>
 
                         <input type="date"
+                            id="work_date"
                             name="work_date"
                             class="w-full border rounded p-2"
                             value="{{ now()->format('Y-m-d') }}">
@@ -38,11 +39,8 @@
                         </label>
 
                         <select name="site_id"
+                            id="site_id"
                             class="w-full border rounded p-2">
-
-                            <option value="">
-                                選択してください
-                            </option>
 
                             @foreach($sites as $site)
 

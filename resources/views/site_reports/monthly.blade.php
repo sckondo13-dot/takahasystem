@@ -12,11 +12,23 @@
                 <form class="flex flex-wrap gap-3 items-end">
                     <div>
                         <label class="block mb-1">
+                            月
+                        </label>
+                        <input
+                            type="month"
+                            id="month"
+                            name="month"
+                            value="{{ $month->format('Y-m') }}"
+                            class="border rounded p-2">
+                    </div>
+                    <div>
+                        <label class="block mb-1">
                             現場選択
                         </label>
 
                         <select
                             name="site_id"
+                            id="site_id"
                             class="border rounded p-2">
 
                             <option value="">
@@ -37,16 +49,7 @@
 
                         </select>
                     </div>
-                    <div>
-                        <label class="block mb-1">
-                            月
-                        </label>
-                        <input
-                            type="month"
-                            name="month"
-                            value="{{ $month->format('Y-m') }}"
-                            class="border rounded p-2">
-                    </div>
+
                     <div>
                         <button
                             class="bg-blue-600 text-white px-5 py-2 rounded">

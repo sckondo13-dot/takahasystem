@@ -113,28 +113,21 @@
                 @enderror
 
             </div>
+            <div>
+                <label>開始月</label>
+                <input
+                    type="month"
+                    name="contract_start"
+                    value="{{ optional($site->contract_start)->format('Y-m') }}">
+            </div>
 
-            <select
-                name="status"
-                class="w-full border rounded p-2">
-
-                <option
-                    value="解体中"
-                    {{ old('status',$site->status)=='解体中'?'selected':'' }}>
-
-                    解体中
-
-                </option>
-
-                <option
-                    value="解体完了"
-                    {{ old('status',$site->status)=='解体完了'?'selected':'' }}>
-
-                    解体完了
-
-                </option>
-
-            </select>
+            <div>
+                <label>終了月</label>
+                <input
+                    type="month"
+                    name="contract_end"
+                    value="{{ optional($site->contract_end)->format('Y-m') }}">
+            </div>
 
             <button class="bg-blue-600 hover:bg-blue-700 text-white px-5 py-2 rounded">
 

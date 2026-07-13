@@ -30,15 +30,21 @@
         <table class="w-full border">
 
             <thead class="bg-gray-100">
-
                 <tr>
-
                     <th class="border p-2">
                         現場名
                     </th>
 
                     <th class="border p-2">
-                        元請け
+                        元請
+                    </th>
+
+                    <th class="border p-2">
+                        契約区分
+                    </th>
+
+                    <th class="border p-2">
+                        契約期間
                     </th>
 
                     <th class="border p-2">
@@ -46,15 +52,9 @@
                     </th>
 
                     <th class="border p-2">
-                        契約
-                    </th>
-
-                    <th class="border p-2">
                         操作
                     </th>
-
                 </tr>
-
             </thead>
 
             <tbody>
@@ -64,41 +64,35 @@
                 <tr>
 
                     <td class="border p-2">
-
                         {{ $site->name }}
-
                     </td>
 
                     <td class="border p-2">
-
                         {{ $site->client->name }}
-
                     </td>
 
-                    <td class="border p-2">
-
+                    <td class="border p-2 text-center">
                         {{ $site->contract_type }}
+                    </td>
+
+                    <td class="border p-2 text-center">
+
+                        {{ optional($site->contract_start)->format('Y/m') }}
+                        ～
+
+                        {{ $site->contract_end
+        ? $site->contract_end->format('Y/m')
+        : '未定' }}
 
                     </td>
-                    <td class="border p-2">
 
-                        @if($site->status=='解体中')
+                    <td class="border p-2 text-center">
 
-                        <span class="bg-green-100 text-green-700 px-2 py-1 rounded">
+                        <span class="{{ $site->status_color }} px-2 py-1 rounded">
 
-                            解体中
-
-                        </span>
-
-                        @else
-
-                        <span class="bg-gray-200 text-gray-700 px-2 py-1 rounded">
-
-                            解体完了
+                            {{ $site->status }}
 
                         </span>
-
-                        @endif
 
                     </td>
 
@@ -106,21 +100,23 @@
 
                         <div class="flex gap-2">
 
-                            <a href="{{ route('sites.edit', $site) }}"
-                                class="bg-yellow-400 px-3 py-1 rounded">
+                            <a
+                                href="{{ route('sites.edit', $site) }}"
+                                class="bg-yellow-400 hover:bg-yellow-500 px-3 py-1 rounded">
 
                                 編集
 
                             </a>
 
-                            <form action="{{ route('sites.destroy', $site) }}"
+                            <form
+                                action="{{ route('sites.destroy', $site) }}"
                                 method="POST">
 
                                 @csrf
                                 @method('DELETE')
 
                                 <button
-                                    class="bg-red-500 text-white px-3 py-1 rounded"
+                                    class="bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded"
                                     onclick="return confirm('削除しますか？')">
 
                                     削除

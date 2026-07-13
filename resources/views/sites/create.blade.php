@@ -73,27 +73,21 @@
             </div>
 
             <div>
+                <label>開始月</label>
 
-                <label class="block mb-1">
+                <input
+                    type="month"
+                    name="contract_start"
+                    class="form-control">
+            </div>
 
-                    状況
+            <div>
+                <label>終了月</label>
 
-                </label>
-
-                <select
-                    name="status"
-                    class="w-full border rounded p-2">
-
-                    <option value="解体中">
-                        解体中
-                    </option>
-
-                    <option value="解体完了">
-                        解体完了
-                    </option>
-
-                </select>
-
+                <input
+                    type="month"
+                    name="contract_end"
+                    class="form-control">
             </div>
 
             <button class="bg-blue-600 text-white px-5 py-2 rounded">
