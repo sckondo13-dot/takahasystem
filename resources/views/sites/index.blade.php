@@ -17,6 +17,109 @@
 
         </div>
 
+        <form method="GET" class="mb-5">
+
+            <div class="flex flex-wrap gap-3 items-end">
+
+                <div>
+                    <label class="block text-sm mb-1">
+                        現場名
+                    </label>
+
+                    <input
+                        type="text"
+                        name="keyword"
+                        value="{{ request('keyword') }}"
+                        placeholder="現場名検索"
+                        class="border rounded p-2">
+                </div>
+
+                <div>
+                    <label class="block text-sm mb-1">
+                        元請
+                    </label>
+
+                    <select
+                        name="client_id"
+                        class="border rounded p-2">
+
+                        <option value="">
+                            全て
+                        </option>
+
+                        @foreach($clients as $client)
+
+                        <option
+                            value="{{ $client->id }}"
+                            @selected(request('client_id')==$client->id)>
+
+                            {{ $client->name }}
+
+                        </option>
+
+                        @endforeach
+
+                    </select>
+
+                </div>
+
+                <div>
+                    <label class="block text-sm mb-1">
+                        状況
+                    </label>
+
+                    <select
+                        name="status"
+                        class="border rounded p-2">
+
+                        <option value="">
+                            全て
+                        </option>
+
+                        <option value="active"
+                            @selected(request('status')=='active' )>
+
+                            解体中
+
+                        </option>
+
+                        <option value="future"
+                            @selected(request('status')=='future' )>
+
+                            未開始
+
+                        </option>
+
+                        <option value="finished"
+                            @selected(request('status')=='finished' )>
+
+                            終了
+
+                        </option>
+
+                    </select>
+
+                </div>
+
+                <button
+                    class="bg-blue-600 text-white px-4 py-2 rounded">
+
+                    検索
+
+                </button>
+
+                <a
+                    href="{{ route('sites.index') }}"
+                    class="bg-gray-400 text-white px-4 py-2 rounded">
+
+                    リセット
+
+                </a>
+
+            </div>
+
+        </form>
+
         @if(session('success'))
 
         <div class="bg-green-100 text-green-700 p-3 mb-5 rounded">

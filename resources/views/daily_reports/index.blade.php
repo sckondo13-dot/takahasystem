@@ -79,81 +79,40 @@
 
                     <tr>
 
-                        <th class="
-    border p-2
-    sticky top-0 left-0
-    bg-gray-100
-    z-30
-    min-w-[100px]
-">
-
+                        <th class="border p-2 sticky top-0 left-0 bg-gray-100 z-30 min-w-[100px]">
                             日付
-
                         </th>
-
-                        @foreach($sites as $site)
-
-                        <th class="
-    border p-2 whitespace-nowrap min-w-[120px]
-    sticky top-0
-    bg-gray-100
-    z-20
-">
-
+                        @foreach($sites->reject(fn($site) => str_starts_with($site->name, '木造解体：')) as $site)
+                        <th class="border p-2 whitespace-nowrap min-w-[120px] sticky top-0 bg-gray-100 z-20">
                             {{ $site->name }}
-
                         </th>
-
                         @endforeach
-
                     </tr>
-
                 </thead>
-
                 <tbody>
-
                     @foreach($dates as $date)
-
                     <tr class="@if($date->dayOfWeek === 0)bg-red-50
                     @elseif($date->dayOfWeek === 6)
                     bg-blue-50
                     @endif">
-
                         {{-- 日付 --}}
                         <td class="border p-2 font-bold    sticky left-0 z-10 @if($date->dayOfWeek === 0) bg-red-50 text-red-600 @elseif($date->dayOfWeek === 6) bg-blue-50 text-blue-600 @endif">
-
                             {{ $date->format('n/j') }}
-
                             ({{ ['日','月','火','水','木','金','土'][$date->dayOfWeek] }})
-
                         </td>
-
                         {{-- 現場 --}}
-                        @foreach($sites as $site)
-
+                        @foreach($sites->reject(fn($site) => str_starts_with($site->name, '木造解体：')) as $site)
                         <td class="border p-2 text-center">
-
                             @php
-
                             $data = $reportMap[
                             $date->format('Y-m-d')
                             ][$site->id] ?? null;
-
                             @endphp
-
                             @if($data)
-
-                            <a href="{{ route('daily-reports.show', $data['report']) }}" class="inline-flex items-center justify-center
-                                                  w-10 h-10 rounded-full
-                                                  bg-blue-600 hover:bg-blue-700
-                                                  text-white font-bold">
-
+                            <a href="{{ route('daily-reports.show', $data['report']) }}" class="inline-flex items-center justify-center w-10 h-10 rounded-full bg-blue-600 hover:bg-blue-700 text-white font-bold">
                                 {{ $data['count'] }}
-
                             </a>
-
                             @endif
-
                         </td>
 
                         @endforeach

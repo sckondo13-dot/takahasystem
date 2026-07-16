@@ -11,13 +11,63 @@ class SiteController extends Controller
     /**
      * 一覧
      */
-    public function index()
+    public function index(Request $request)
     {
-        $sites = Site::with('client')
+        $query = Site::with('client');
+
+        // 現場名検索
+        if ($request->filled('keyword')) {
+            $query->where('name', 'like', '%' . $request->keyword . '%');
+        }
+
+        // 元請絞り込み
+        if ($request->filled('client_id')) {
+            $query->where('client_id', $request->client_id);
+        }
+
+        // 状況絞り込み
+        if ($request->filled('status')) {
+
+            $today = now()->startOfMonth();
+
+            switch ($request->status) {
+
+                case 'active':
+
+                    $query->whereDate('contract_start', '<=', $today)
+                        ->where(function ($q) use ($today) {
+                            $q->whereNull('contract_end')
+                                ->orWhereDate('contract_end', '>=', $today);
+                        });
+
+                    break;
+
+                case 'future':
+
+                    $query->whereDate('contract_start', '>', $today);
+
+                    break;
+
+                case 'finished':
+
+                    $query->whereNotNull('contract_end')
+                        ->whereDate('contract_end', '<', $today);
+
+                    break;
+            }
+        }
+
+        $sites = $query
+            ->orderBy('contract_start', 'desc')
             ->orderBy('name')
             ->get();
 
-        return view('sites.index', compact('sites'));
+        $clients = Client::orderBy('name')->get();
+
+        return view('sites.index', compact(
+            'sites',
+            'clients'
+        ));
     }
 
     /**
