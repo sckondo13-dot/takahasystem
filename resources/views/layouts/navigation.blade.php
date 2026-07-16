@@ -21,6 +21,9 @@
                     <x-nav-link :href="route('site-reports.monthly')">
                         {{ __('現場明細') }}
                     </x-nav-link>
+                    <x-nav-link :href="route('site-reports.niseko')">
+                        {{ __('ニセコ明細') }}
+                    </x-nav-link>
                 </div>
             </div>
 
@@ -48,6 +51,9 @@
                         </x-dropdown-link>
                         <x-dropdown-link :href="route('site-reports.monthly')">
                             現場明細
+                        </x-dropdown-link>
+                        <x-dropdown-link :href="route('site-reports.niseko')">
+                            ニセコ明細
                         </x-dropdown-link>
                         <x-dropdown-link :href="route('sites.index')">
                             現場管理

@@ -7,6 +7,8 @@ use App\Models\Site;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use App\Services\Pdf\SiteMonthlyPdfService;
+use App\Services\Pdf\NisekoMonthlyPdfService;
+use App\Models\Client;
 
 class SiteReportController extends Controller
 {
@@ -97,6 +99,32 @@ class SiteReportController extends Controller
     ) {
         return $pdf->downloadPdf(
             $this->getMonthlyReportData($request)
+        );
+    }
+
+    public function niseko(Request $request)
+    {
+        return view(
+            'site_reports.niseko',
+            $this->getNisekoData($request)
+        );
+    }
+
+    public function nisekoPdf(
+        Request $request,
+        NisekoMonthlyPdfService $pdf
+    ) {
+        return $pdf->preview(
+            $this->getNisekoData($request)
+        );
+    }
+
+    public function nisekoDownload(
+        Request $request,
+        NisekoMonthlyPdfService $pdf
+    ) {
+        return $pdf->downloadPdf(
+            $this->getNisekoData($request)
         );
     }
 
@@ -268,5 +296,193 @@ class SiteReportController extends Controller
             'itemList',
             'itemTotals',
         );
+    }
+
+    private function getNisekoData(Request $request)
+    {
+
+        if (!$request->filled('month')) {
+
+            return [
+                'month' => now(),
+                'client' => Client::where('name', 'ニセコ環境（木造解体）')->first(),
+                'visibleSites' => collect(),
+                'rows' => [],
+                'siteTotals' => [],
+                'totalManHours' => 0,
+                'totalSales' => 0,
+                'totalTransportation' => 0,
+                'showTable' => false,
+            ];
+        }
+        $month = $request->month
+            ? Carbon::parse($request->month . '-01')
+            : now()->startOfMonth();
+
+        $start = $month->copy()->startOfMonth();
+        $end   = $month->copy()->endOfMonth();
+
+        $client = Client::where('name', 'ニセコ環境（木造解体）')
+            ->firstOrFail();
+
+        /*
+    |--------------------------------------------------------------------------
+    | 契約期間中の現場
+    |--------------------------------------------------------------------------
+    */
+
+        $sites = Site::where('client_id', $client->id)
+            ->activeOn($month)
+            ->orderBy('name')
+            ->get();
+
+        /*
+    |--------------------------------------------------------------------------
+    | 日報取得
+    |--------------------------------------------------------------------------
+    */
+
+        $reports = DailyReport::with([
+            'site',
+            'details',
+        ])
+            ->whereBetween('work_date', [$start, $end])
+            ->whereIn('site_id', $sites->pluck('id'))
+            ->orderBy('work_date')
+            ->get();
+
+        /*
+    |--------------------------------------------------------------------------
+    | 日付一覧
+    |--------------------------------------------------------------------------
+    */
+
+        $dates = collect();
+
+        for ($date = $start->copy(); $date <= $end; $date->addDay()) {
+
+            $dates->push($date->copy());
+        }
+
+        /*
+    |--------------------------------------------------------------------------
+    | 初期化
+    |--------------------------------------------------------------------------
+    */
+
+        $rows = [];
+
+        $siteTotals = [];
+
+        foreach ($sites as $site) {
+
+            $siteTotals[$site->id] = 0;
+        }
+
+        $totalManHours = 0;
+        $totalSales = 0;
+        $totalTransportation = 0;
+
+        /*
+    |--------------------------------------------------------------------------
+    | 1日ごとの行作成
+    |--------------------------------------------------------------------------
+    */
+
+        foreach ($dates as $date) {
+
+            $dateKey = $date->format('Y-m-d');
+
+            $dayReports = $reports->where(
+                fn($r) => $r->work_date->format('Y-m-d') == $dateKey
+            );
+
+            $row = [
+
+                'date' => $date,
+
+                'sites' => [],
+
+                'total_man' => 0,
+
+                'sales' => 0,
+
+                'transportation' => 0,
+
+            ];
+
+            foreach ($dayReports as $report) {
+
+                $man = $report->details->sum('man_hours');
+
+                $sales = $report->details->sum('sales');
+
+                $transportation = $report->details->sum('transportation_cost');
+
+                $row['sites'][$report->site_id] = [
+
+                    'man' => $man,
+
+                    'sales' => $sales,
+
+                ];
+
+                $row['total_man'] += $man;
+
+                $row['sales'] += $sales;
+
+                $row['transportation'] += $transportation;
+
+                $siteTotals[$report->site_id] += $man;
+
+                $totalManHours += $man;
+
+                $totalSales += $sales;
+
+                $totalTransportation += $transportation;
+            }
+
+            $rows[] = $row;
+        }
+
+        /*
+    |--------------------------------------------------------------------------
+    | 作業があった現場だけ表示
+    |--------------------------------------------------------------------------
+    */
+
+        $visibleSites = $sites->filter(function ($site) use ($rows) {
+
+            foreach ($rows as $row) {
+
+                if (isset($row['sites'][$site->id])) {
+
+                    return true;
+                }
+            }
+
+            return false;
+        })->values();
+
+        return [
+            'showTable' => true,
+
+            'client' => $client,
+
+            'month' => $month,
+
+            'visibleSites' => $visibleSites,
+
+            'rows' => $rows,
+
+            'siteTotals' => $siteTotals,
+
+            'totalManHours' => $totalManHours,
+
+            'totalSales' => $totalSales,
+
+            'totalTransportation' => $totalTransportation,
+
+        ];
     }
 }

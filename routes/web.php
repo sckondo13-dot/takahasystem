@@ -69,6 +69,21 @@ Route::middleware('auth')->group(function () {
         AttendanceController::class,
         'downloadPdf'
     ])->name('attendance.pdf.download');
+
+    Route::get(
+        '/site-reports/niseko',
+        [SiteReportController::class, 'niseko']
+    )->name('site-reports.niseko');
+
+    Route::get(
+        '/site-reports/niseko/pdf',
+        [SiteReportController::class, 'nisekoPdf']
+    )->name('site-reports.niseko.pdf');
+
+    Route::get(
+        '/site-reports/niseko/download',
+        [SiteReportController::class, 'nisekoDownload']
+    )->name('site-reports.niseko.download');
 });
 
 require __DIR__ . '/auth.php';
