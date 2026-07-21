@@ -10,7 +10,7 @@ class SubcontractorAttendancePdfService extends BasePdfService
     public function preview(array $data)
     {
         return $this->stream(
-            'pdf.attendance',
+            'pdf.subcontractor-attendance',
             $data,
             'a4',
             'portrait'
@@ -29,7 +29,7 @@ class SubcontractorAttendancePdfService extends BasePdfService
         );
 
         return $this->download(
-            'pdf.attendance',
+            'pdf.subcontractor-attendance',
             $data,
             $filename
         );

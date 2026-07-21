@@ -154,13 +154,13 @@ class SubcontractorAttendanceController extends Controller
         $fixedAllowances = collect();
         $fixedAllowanceTotal = 0;
 
-        $employee = null;
+        $subcontractor = null;
 
         $today = now();
 
         if ($subcontractorId) {
 
-            $employee = Subcontractor::findOrFail($subcontractorId);
+            $subcontractor = Subcontractor::findOrFail($subcontractorId);
 
             $details = DailyReportDetail::with([
                 'dailyReport.site.client',
@@ -189,7 +189,7 @@ class SubcontractorAttendanceController extends Controller
         }
 
         return compact(
-            'subcontractors',
+            'subcontractor',
             'month',
             'today',
             'details',

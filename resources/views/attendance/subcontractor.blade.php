@@ -83,7 +83,7 @@
                     {{-- PDF表示 --}}
                     <a
                         href="{{ route('subcontractor-attendance.pdf',[
-                    'subcontractor'=>$subcontractorId,
+                    'subcontractor_id'=>$subcontractorId,
                     'month'=>$month->format('Y-m')
                 ]) }}"
                         target="_blank"
