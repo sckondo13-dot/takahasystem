@@ -11,6 +11,7 @@ use App\Http\Controllers\AttendanceController;
 use App\Http\Controllers\AllowanceController;
 use App\Http\Controllers\AttendanceTimeController;
 use App\Http\Controllers\SiteReportController;
+use App\Http\Controllers\SubcontractorAttendanceController;
 
 Route::redirect('/', '/login');
 
@@ -84,6 +85,21 @@ Route::middleware('auth')->group(function () {
         '/site-reports/niseko/download',
         [SiteReportController::class, 'nisekoDownload']
     )->name('site-reports.niseko.download');
+
+    Route::get(
+        '/subcontractor-attendance',
+        [SubcontractorAttendanceController::class, 'index']
+    )->name('subcontractor-attendance.index');
+
+    Route::get(
+        '/subcontractor-attendance/pdf',
+        [SubcontractorAttendanceController::class, 'pdf']
+    )->name('subcontractor-attendance.pdf');
+
+    Route::get(
+        '/subcontractor-attendance/download',
+        [SubcontractorAttendanceController::class, 'downloadPdf']
+    )->name('subcontractor-attendance.download');
 });
 
 require __DIR__ . '/auth.php';

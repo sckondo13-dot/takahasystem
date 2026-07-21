@@ -18,6 +18,9 @@
                     <x-nav-link :href="route('attendance.index')">
                         {{ __('個人出勤簿') }}
                     </x-nav-link>
+                    <x-nav-link :href="route('subcontractor-attendance.index')">
+                        {{ __('下請け明細') }}
+                    </x-nav-link>
                     <x-nav-link :href="route('site-reports.monthly')">
                         {{ __('現場明細') }}
                     </x-nav-link>
@@ -48,6 +51,9 @@
                         </x-dropdown-link>
                         <x-dropdown-link :href="route('attendance.index')">
                             個人出勤簿
+                        </x-dropdown-link>
+                        <x-dropdown-link :href="route('subcontractor-attendance.index')">
+                            下請け明細
                         </x-dropdown-link>
                         <x-dropdown-link :href="route('site-reports.monthly')">
                             現場明細

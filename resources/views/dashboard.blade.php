@@ -15,6 +15,9 @@
                     <x-dropdown-link :href="route('attendance.index')">
                         個人出勤簿
                     </x-dropdown-link>
+                    <x-dropdown-link :href="route('subcontractor-attendance.index')">
+                        下請け明細
+                    </x-dropdown-link>
                     <x-dropdown-link :href="route('site-reports.monthly')">
                         現場明細
                     </x-dropdown-link>
