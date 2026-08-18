@@ -25,9 +25,27 @@ class SiteApiController extends Controller
             $date = now();
         }
 
-        $sites = Site::activeOn($date)
+        $query = Site::activeOn($date);
+
+        /*
+        |--------------------------------------------------------------------------
+        | 元請指定（請求書用）
+        |--------------------------------------------------------------------------
+        */
+        if ($request->filled('client_id')) {
+
+            $query->where(
+                'client_id',
+                $request->client_id
+            );
+        }
+
+        $sites = $query
             ->orderBy('name')
-            ->get(['id', 'name']);
+            ->get([
+                'id',
+                'name'
+            ]);
 
         return response()->json($sites);
     }

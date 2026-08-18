@@ -33,4 +33,12 @@ class DailyReport extends Model
     {
         return $this->hasMany(DailyReportItem::class);
     }
+
+    public function invoices()
+    {
+        return $this->belongsToMany(
+            Invoice::class,
+            'invoice_daily_reports'
+        );
+    }
 }

@@ -10,3 +10,7 @@ import { initSiteSelector } from './site-selector';
 
 initSiteSelector();
 
+import { initInvoiceSiteSelector } from './invoice-site-selector';
+
+initInvoiceSiteSelector();
+

@@ -12,6 +12,7 @@ use App\Http\Controllers\AllowanceController;
 use App\Http\Controllers\AttendanceTimeController;
 use App\Http\Controllers\SiteReportController;
 use App\Http\Controllers\SubcontractorAttendanceController;
+use App\Http\Controllers\InvoiceController;
 
 Route::redirect('/', '/login');
 
@@ -100,6 +101,18 @@ Route::middleware('auth')->group(function () {
         '/subcontractor-attendance/download',
         [SubcontractorAttendanceController::class, 'downloadPdf']
     )->name('subcontractor-attendance.download');
+
+    Route::get(
+        '/invoices/{invoice}/pdf',
+        [InvoiceController::class, 'pdf']
+    )->name('invoices.pdf');
+
+    Route::get(
+        '/invoices/{invoice}/download',
+        [InvoiceController::class, 'downloadPdf']
+    )->name('invoices.pdf.download');
+
+    Route::resource('invoices', InvoiceController::class);
 });
 
 require __DIR__ . '/auth.php';

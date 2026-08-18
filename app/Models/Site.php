@@ -95,4 +95,9 @@ class Site extends Model
     {
         return $this->hasMany(DailyReport::class);
     }
+
+    public function invoices()
+    {
+        return $this->hasMany(Invoice::class);
+    }
 }
