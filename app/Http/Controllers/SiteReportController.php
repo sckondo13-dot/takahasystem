@@ -174,6 +174,7 @@ class SiteReportController extends Controller
                 'はつり',
                 '石綿',
                 'トラック',
+                'ユニック',
             ];
 
             foreach ($workTypes as $type) {
