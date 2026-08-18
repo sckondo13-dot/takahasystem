@@ -35,8 +35,11 @@ class DailyReportController extends Controller
 
         /**
          * 現場
+         * 選択した月に進行中の現場のみ
          */
-        $sites = Site::orderBy('name')->get();
+        $sites = Site::activeOn($month)
+            ->orderBy('name')
+            ->get();
 
         /**
          * 日報
