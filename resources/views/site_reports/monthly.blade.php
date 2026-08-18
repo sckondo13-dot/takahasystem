@@ -160,13 +160,15 @@
 
                         <th class="border p-2 bg-gray-100 whitespace-nowrap">重機2</th>
 
-                        <th class="border p-2 bg-gray-100 whitespace-nowrap">ガス</th>
+                        {{--<th class="border p-2 bg-gray-100 whitespace-nowrap">ガス</th>--}}
 
-                        <th class="border p-2 bg-gray-100 whitespace-nowrap">はつり</th>
+                        {{--<th class="border p-2 bg-gray-100 whitespace-nowrap">はつり</th>--}}
 
                         <th class="border p-2 bg-gray-100 whitespace-nowrap">石綿</th>
 
                         <th class="border p-2 bg-gray-100 whitespace-nowrap">トラック</th>
+
+                        <th class="border p-2 bg-gray-100 whitespace-nowrap">ユニック</th>
 
                         <th class="border p-2 bg-gray-100 whitespace-nowrap">人工</th>
 
@@ -213,13 +215,15 @@
 
                         <td class="border text-center">{{ $data['重機２'] ?? '' }}</td>
 
-                        <td class="border text-center">{{ $data['ガス工'] ?? '' }}</td>
+                        {{--<td class="border text-center">{{ $data['ガス工'] ?? '' }}</td>--}}
 
-                        <td class="border text-center">{{ $data['はつり'] ?? '' }}</td>
+                        {{--<td class="border text-center">{{ $data['はつり'] ?? '' }}</td>--}}
 
                         <td class="border text-center">{{ $data['石綿'] ?? '' }}</td>
 
                         <td class="border text-center">{{ $data['トラック'] ?? '' }}</td>
+
+                        <td class="border text-center">{{ $data['ユニック'] ?? '' }}</td>
 
                         <td class="border text-center">
 
