@@ -76,7 +76,11 @@ class DailyReportController extends Controller
 
                 'report' => $dailyReport,
 
+                // 人数
                 'count' => $dailyReport->details->count(),
+
+                // 人工合計
+                'man_hours' => $dailyReport->details->sum('man_hours'),
             ];
         }
 
