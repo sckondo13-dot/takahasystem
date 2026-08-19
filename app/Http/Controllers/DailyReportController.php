@@ -11,6 +11,7 @@ use App\Models\WorkType;
 use Illuminate\Http\Request;
 use App\Models\AttendanceTime;
 use App\Models\DailyReportItem;
+use Illuminate\Support\Facades\DB;
 
 class DailyReportController extends Controller
 {
@@ -529,5 +530,30 @@ class DailyReportController extends Controller
 
             default => 0,
         };
+    }
+
+    public function destroy(DailyReport $dailyReport)
+    {
+        DB::transaction(function () use ($dailyReport) {
+
+            // 作業者明細を削除
+            DailyReportDetail::where(
+                'daily_report_id',
+                $dailyReport->id
+            )->delete();
+
+            // 貸出・項目明細を削除
+            DailyReportItem::where(
+                'daily_report_id',
+                $dailyReport->id
+            )->delete();
+
+            // 日報本体を削除
+            $dailyReport->delete();
+        });
+
+        return redirect()
+            ->route('daily-reports.index')
+            ->with('success', '日報を削除しました。');
     }
 }

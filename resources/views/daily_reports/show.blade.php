@@ -17,6 +17,19 @@
                     編集
 
                 </a>
+                <form
+                    action="{{ route('daily-reports.destroy', $dailyReport) }}"
+                    method="POST"
+                    onsubmit="return confirm('この日報を削除しますか？');">
+                    @csrf
+                    @method('DELETE')
+
+                    <button
+                        type="submit"
+                        class="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded">
+                        削除
+                    </button>
+                </form>
 
                 <a href="{{ route('daily-reports.index') }}"
                     class="bg-gray-600 text-white px-5 py-2 rounded">
