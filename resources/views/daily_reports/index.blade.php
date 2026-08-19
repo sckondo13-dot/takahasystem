@@ -82,7 +82,7 @@
                         <th class="border p-2 sticky top-0 left-0 bg-gray-100 z-30 min-w-[100px]">
                             日付
                         </th>
-                        @foreach($sites->reject(fn($site) => str_starts_with($site->name, '木造解体：')) as $site)
+                        @foreach($sites->reject(fn($site) => str_starts_with($site->name, 'ニセコ木造解体：')) as $site)
                         <th class="border p-2 whitespace-nowrap min-w-[120px] sticky top-0 bg-gray-100 z-20">
                             {{ $site->name }}
                         </th>
