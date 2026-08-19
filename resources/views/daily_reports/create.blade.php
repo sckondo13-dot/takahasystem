@@ -11,6 +11,75 @@
 
             @csrf
 
+            @if(session('subcontractor_confirmations'))
+
+            <div class="bg-yellow-50 border-2 border-yellow-400 rounded p-5 mb-5">
+
+                <h2 class="text-lg font-bold text-yellow-800 mb-3">
+                    下請の登録内容を確認してください
+                </h2>
+
+                <p class="mb-4">
+                    同じ日・同じ現場に、すでに登録されている下請会社が
+                    別の作業内容で登録されています。
+                </p>
+
+                @foreach(session('subcontractor_confirmations') as $warning)
+
+                <div class="bg-white border rounded p-3 mb-2">
+
+                    <div class="font-bold">
+                        【下請】{{ $warning['subcontractor_name'] }}
+                    </div>
+
+                    <div>
+                        既存：
+                        <span class="font-bold">
+                            {{ $warning['existing_work_type'] }}
+                        </span>
+                    </div>
+
+                    <div>
+                        今回：
+                        <span class="font-bold text-blue-600">
+                            {{ $warning['new_work_type'] }}
+                        </span>
+                    </div>
+
+                </div>
+
+                @endforeach
+
+                <p class="font-bold text-yellow-800 mt-4 mb-3">
+                    このまま登録しますか？
+                </p>
+
+                <div class="flex gap-3">
+
+                    <button
+                        type="submit"
+                        name="confirm_subcontractor"
+                        value="1"
+                        class="bg-blue-600 hover:bg-blue-700 text-white px-5 py-2 rounded">
+
+                        このまま登録する
+
+                    </button>
+
+                    <a
+                        href="{{ route('daily-reports.create') }}"
+                        class="bg-gray-500 hover:bg-gray-600 text-white px-5 py-2 rounded">
+
+                        キャンセル
+
+                    </a>
+
+                </div>
+
+            </div>
+
+            @endif
+
             {{-- 上部情報 --}}
             <div class="bg-white border rounded p-5 mb-5">
 
@@ -435,6 +504,7 @@
                     class="w-full border rounded p-2"></textarea>
 
             </div>
+            <input type="hidden" name="allow_subcontractor_duplicate" value="0">
 
             <div class="mt-5">
 

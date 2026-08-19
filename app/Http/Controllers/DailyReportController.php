@@ -156,12 +156,54 @@ class DailyReportController extends Controller
             'work_date' => 'required|date',
         ]);
 
+        /*
+    |--------------------------------------------------------------------------
+    | 下請の作業内容重複チェック
+    |--------------------------------------------------------------------------
+    */
+
+        $warnings = $this->checkSubcontractorWorkTypeConflicts($request);
+
+        /*
+    |--------------------------------------------------------------------------
+    | 確認済みでない場合は登録を止める
+    |--------------------------------------------------------------------------
+    */
+
+        if (
+            !empty($warnings)
+            && !$request->boolean('confirm_subcontractor')
+        ) {
+
+            return back()
+                ->withInput()
+                ->with('subcontractor_confirmations', $warnings);
+        }
+
+        /*
+    |--------------------------------------------------------------------------
+    | 日報作成
+    |--------------------------------------------------------------------------
+    */
+
         $dailyReport = $this->createDailyReport($request);
+
+        /*
+    |--------------------------------------------------------------------------
+    | 作業者保存
+    |--------------------------------------------------------------------------
+    */
 
         $duplicateWorkers = $this->saveWorkers(
             $request,
             $dailyReport
         );
+
+        /*
+    |--------------------------------------------------------------------------
+    | 現場費保存
+    |--------------------------------------------------------------------------
+    */
 
         $this->saveItems(
             $request,
@@ -343,17 +385,45 @@ class DailyReportController extends Controller
                 ? $id
                 : null;
 
+            $workTypeId = $request->work_type_id[$index];
+
+            /*
+     * 社員：
+     * 作業内容に関係なく同じ社員なら重複
+     *
+     * 下請：
+     * 同じ会社＋同じ作業内容なら重複
+     */
             if (
                 $this->isDuplicateWorker(
                     $dailyReport,
                     $employeeId,
-                    $subcontractorId
+                    $subcontractorId,
+                    $request->work_type_id[$index]
                 )
             ) {
 
                 $duplicateWorkers[] = $worker;
 
                 continue;
+            }
+
+            /*
+     * 下請で、
+     * 同じ会社だが違う作業内容がすでに存在する場合
+     */
+            if (
+                $subcontractorId &&
+                $this->hasDifferentSubcontractorWork(
+                    $dailyReport,
+                    $subcontractorId,
+                    $workTypeId
+                )
+            ) {
+
+                /*
+         * ここは後ほど確認処理を入れる
+         */
             }
 
             $this->createDetail(
@@ -372,31 +442,75 @@ class DailyReportController extends Controller
     private function isDuplicateWorker(
         DailyReport $dailyReport,
         $employeeId,
-        $subcontractorId
+        $subcontractorId,
+        $workTypeId
     ) {
-
         $query = DailyReportDetail::where(
             'daily_report_id',
             $dailyReport->id
         );
 
+        /*
+     * 社員
+     *
+     * 同じ社員が同じ日報に存在したら、
+     * 作業内容に関係なく重複
+     */
         if ($employeeId) {
 
-            $query->where(
-                'employee_id',
-                $employeeId
-            );
+            return $query
+                ->where('employee_id', $employeeId)
+                ->exists();
         }
 
+        /*
+     * 下請
+     *
+     * 同じ会社＋同じ作業内容なら重複
+     *
+     * 作業内容が違う場合は登録可能
+     */
         if ($subcontractorId) {
 
-            $query->where(
-                'subcontractor_id',
-                $subcontractorId
-            );
+            return $query
+                ->where('subcontractor_id', $subcontractorId)
+                ->where('work_type_id', $workTypeId)
+                ->exists();
         }
 
-        return $query->exists();
+        return false;
+    }
+
+    private function hasDifferentSubcontractorWorkType(
+        DailyReport $dailyReport,
+        $subcontractorId,
+        $workTypeId
+    ) {
+        if (!$subcontractorId) {
+            return false;
+        }
+
+        return DailyReportDetail::where(
+            'daily_report_id',
+            $dailyReport->id
+        )
+            ->where('subcontractor_id', $subcontractorId)
+            ->where('work_type_id', '!=', $workTypeId)
+            ->exists();
+    }
+
+    private function hasDifferentSubcontractorWork(
+        DailyReport $dailyReport,
+        $subcontractorId,
+        $workTypeId
+    ) {
+        return DailyReportDetail::where(
+            'daily_report_id',
+            $dailyReport->id
+        )
+            ->where('subcontractor_id', $subcontractorId)
+            ->where('work_type_id', '!=', $workTypeId)
+            ->exists();
     }
 
     private function createDetail(
@@ -534,6 +648,156 @@ class DailyReportController extends Controller
 
             default => 0,
         };
+    }
+
+    private function checkSubcontractorWorkTypeConflicts(
+        Request $request
+    ): array {
+
+        $warnings = [];
+
+        /*
+    |--------------------------------------------------------------------------
+    | 同じ現場・同じ日の日報を取得
+    |--------------------------------------------------------------------------
+    */
+
+        $dailyReport = DailyReport::where(
+            'site_id',
+            $request->site_id
+        )
+            ->whereDate(
+                'work_date',
+                $request->work_date
+            )
+            ->first();
+
+        /*
+    |--------------------------------------------------------------------------
+    | まだ日報が存在しない場合はチェック不要
+    |--------------------------------------------------------------------------
+    */
+
+        if (!$dailyReport) {
+            return $warnings;
+        }
+
+        /*
+    |--------------------------------------------------------------------------
+    | 既存の明細
+    |--------------------------------------------------------------------------
+    */
+
+        $existingDetails = DailyReportDetail::with([
+            'subcontractor',
+            'workType',
+        ])
+            ->where(
+                'daily_report_id',
+                $dailyReport->id
+            )
+            ->whereNotNull('subcontractor_id')
+            ->get();
+
+        /*
+    |--------------------------------------------------------------------------
+    | 今回POSTされた作業者
+    |--------------------------------------------------------------------------
+    */
+
+        foreach ($request->worker ?? [] as $index => $worker) {
+
+            if (!$worker) {
+                continue;
+            }
+
+            /*
+        |--------------------------------------------------------------------------
+        | 下請だけを対象にする
+        |--------------------------------------------------------------------------
+        */
+
+            if (!str_starts_with($worker, 'subcontractor_')) {
+                continue;
+            }
+
+            $subcontractorId = str_replace(
+                'subcontractor_',
+                '',
+                $worker
+            );
+
+            $workTypeId =
+                $request->work_type_id[$index] ?? null;
+
+            if (!$workTypeId) {
+                continue;
+            }
+
+            /*
+        |--------------------------------------------------------------------------
+        | 同じ下請会社の既存登録を検索
+        |--------------------------------------------------------------------------
+        */
+
+            $existing = $existingDetails->first(
+                fn($detail) =>
+                (int) $detail->subcontractor_id
+                    === (int) $subcontractorId
+            );
+
+            /*
+        |--------------------------------------------------------------------------
+        | 既存登録がない場合
+        |--------------------------------------------------------------------------
+        */
+
+            if (!$existing) {
+                continue;
+            }
+
+            /*
+        |--------------------------------------------------------------------------
+        | 同じ作業内容なら通常の重複
+        |--------------------------------------------------------------------------
+        */
+
+            if (
+                (int) $existing->work_type_id
+                === (int) $workTypeId
+            ) {
+                continue;
+            }
+
+            /*
+        |--------------------------------------------------------------------------
+        | 別の作業内容なら確認
+        |--------------------------------------------------------------------------
+        */
+
+            $newWorkType = WorkType::find($workTypeId);
+
+            $subcontractorName =
+                $existing->subcontractor?->name
+                ?? '下請会社';
+
+            $existingWorkType =
+                $existing->workType?->name
+                ?? '作業内容不明';
+
+            $newWorkTypeName =
+                $newWorkType?->name
+                ?? '作業内容不明';
+
+            $warnings[] = [
+                'subcontractor_id' => $subcontractorId,
+                'subcontractor_name' => $subcontractorName,
+                'existing_work_type' => $existingWorkType,
+                'new_work_type' => $newWorkTypeName,
+            ];
+        }
+
+        return $warnings;
     }
 
     public function destroy(DailyReport $dailyReport)
