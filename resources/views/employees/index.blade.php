@@ -31,6 +31,7 @@
                     <th class="border p-2">ID</th>
                     <th class="border p-2">名前</th>
                     <th class="border p-2">勤務状況</th>
+                    <th class="border p-2">退職日</th>
                     <th class="border p-2">操作</th>
                 </tr>
 
@@ -49,9 +50,10 @@
                     <td class="border p-2">
                         {{ $employee->name }}
                     </td>
+
                     <td class="border p-2">
 
-                        @if($employee->status=='在職')
+                        @if(is_null($employee->retirement_date))
 
                         <span class="text-green-600 font-bold">
                             在職
@@ -62,6 +64,20 @@
                         <span class="text-red-600 font-bold">
                             退職
                         </span>
+
+                        @endif
+
+                    </td>
+
+                    <td class="border p-2">
+
+                        @if($employee->retirement_date)
+
+                        {{ $employee->retirement_date->format('Y年m月d日') }}
+
+                        @else
+
+                        -
 
                         @endif
 
@@ -91,12 +107,21 @@
                                     削除
 
                                 </button>
+
                             </form>
+
                         </div>
+
                     </td>
+
                 </tr>
+
                 @endforeach
+
             </tbody>
+
         </table>
+
     </div>
+
 </x-app-layout>

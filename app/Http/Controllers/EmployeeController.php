@@ -41,11 +41,13 @@ class EmployeeController extends Controller
     {
         $request->validate([
             'name' => 'required|max:255',
+            'hire_date' => 'required|date',
         ]);
 
         $employee = Employee::create([
             'name' => $request->name,
-            'status' => $request->status,
+            'hire_date' => $request->hire_date,
+            'retirement_date' => null,
         ]);
 
         foreach ($request->allowances ?? [] as $allowanceId) {
@@ -110,11 +112,14 @@ class EmployeeController extends Controller
     {
         $request->validate([
             'name' => 'required|max:255',
+            'hire_date' => 'required|date',
+            'retirement_date' => 'nullable|date|after_or_equal:hire_date',
         ]);
 
         $employee->update([
             'name' => $request->name,
-            'status' => $request->status,
+            'hire_date' => $request->hire_date,
+            'retirement_date' => $request->retirement_date,
         ]);
 
         $today = today();

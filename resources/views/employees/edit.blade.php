@@ -14,7 +14,7 @@
             @method('PUT')
 
             <div>
-
+                <div class="mb-3">
                 <label class="block mb-1">
                     名前
                 </label>
@@ -29,15 +29,46 @@
                     {{ $message }}
                 </div>
                 @enderror
-                <div>
-                    <label>在職状況</label>
+                </div>
+                <div class="mb-3">
 
-                    <select name="status" class="form-select">
+                    <label class="block mb-1">
+                        雇用日
+                    </label>
 
-                        <option value="在職">在職</option>
-                        <option value="退職">退職</option>
+                    <input
+                        type="date"
+                        name="hire_date"
+                        class="w-full border rounded p-2"
+                        value="{{ old('hire_date', optional($employee->hire_date)->format('Y-m-d')) }}"
+                        required>
 
-                    </select>
+                    @error('hire_date')
+                    <div class="text-red-500 text-sm">
+                        {{ $message }}
+                    </div>
+                    @enderror
+
+                </div>
+
+                <div class="mb-3">
+
+                    <label class="block mb-1">
+                        退職日
+                    </label>
+
+                    <input
+                        type="date"
+                        name="retirement_date"
+                        class="w-full border rounded p-2"
+                        value="{{ old('retirement_date', optional($employee->retirement_date)->format('Y-m-d')) }}">
+
+                    @error('retirement_date')
+                    <div class="text-red-500 text-sm">
+                        {{ $message }}
+                    </div>
+                    @enderror
+
                 </div>
                 <div class="mt-6">
 

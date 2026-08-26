@@ -13,30 +13,41 @@
             @csrf
 
             <div>
+                <div class="mb-3">
+                    <label class="block mb-1">
+                        名前
+                    </label>
 
-                <label class="block mb-1">
-                    名前
-                </label>
+                    <input type="text"
+                        name="name"
+                        class="w-full border rounded p-2"
+                        value="{{ old('name') }}">
 
-                <input type="text"
-                    name="name"
-                    class="w-full border rounded p-2"
-                    value="{{ old('name') }}">
-
-                @error('name')
-                <div class="text-red-500 text-sm">
-                    {{ $message }}
+                    @error('name')
+                    <div class="text-red-500 text-sm">
+                        {{ $message }}
+                    </div>
+                    @enderror
                 </div>
-                @enderror
-                <div>
-                    <label>在職状況</label>
+                <div class="mb-3">
 
-                    <select name="status" class="form-select">
+                    <label class="block mb-1">
+                        雇用日
+                    </label>
 
-                        <option value="在職">在職</option>
-                        <option value="退職">退職</option>
+                    <input
+                        type="date"
+                        name="hire_date"
+                        class="w-full border rounded p-2"
+                        value="{{ old('hire_date') }}"
+                        required>
 
-                    </select>
+                    @error('hire_date')
+                    <div class="text-red-500 text-sm">
+                        {{ $message }}
+                    </div>
+                    @enderror
+
                 </div>
                 <div>
 

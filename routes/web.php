@@ -33,6 +33,11 @@ Route::middleware('auth')->group(function () {
 
     Route::resource('sites', SiteController::class);
 
+    Route::get(
+        '/daily-reports/employees-by-date',
+        [DailyReportController::class, 'employeesByDate']
+    )->name('daily-reports.employees-by-date');
+
     Route::resource('daily-reports', DailyReportController::class);
 
     Route::get('/attendance', [AttendanceController::class, 'index'])

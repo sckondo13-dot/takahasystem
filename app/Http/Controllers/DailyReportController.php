@@ -8,10 +8,11 @@ use App\Models\Employee;
 use App\Models\Site;
 use App\Models\Subcontractor;
 use App\Models\WorkType;
-use Illuminate\Http\Request;
 use App\Models\AttendanceTime;
 use App\Models\DailyReportItem;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Carbon\Carbon;
 
 class DailyReportController extends Controller
 {
@@ -20,38 +21,52 @@ class DailyReportController extends Controller
      */
     public function index(Request $request)
     {
-        /**
-         * 表示月
-         */
+        /*
+        |--------------------------------------------------------------------------
+        | 表示月
+        |--------------------------------------------------------------------------
+        */
+
         $month = $request->month
-            ? \Carbon\Carbon::parse($request->month . '-01')
+            ? Carbon::parse($request->month . '-01')
             : now();
 
-        /**
-         * 月初・月末
-         */
-        $start = $month->copy()->startOfMonth();
+        /*
+        |--------------------------------------------------------------------------
+        | 月初・月末
+        |--------------------------------------------------------------------------
+        */
 
+        $start = $month->copy()->startOfMonth();
         $end = $month->copy()->endOfMonth();
 
-        /**
-         * 現場
-         * 選択した月に進行中の現場のみ
-         */
+        /*
+        |--------------------------------------------------------------------------
+        | 現場
+        |--------------------------------------------------------------------------
+        | 選択した月に進行中の現場のみ
+        */
+
         $sites = Site::activeOn($month)
             ->orderBy('name')
             ->get();
 
-        /**
-         * 日報
-         */
+        /*
+        |--------------------------------------------------------------------------
+        | 日報
+        |--------------------------------------------------------------------------
+        */
+
         $dailyReports = DailyReport::with('details')
             ->whereBetween('work_date', [$start, $end])
             ->get();
 
-        /**
-         * 日付配列
-         */
+        /*
+        |--------------------------------------------------------------------------
+        | 日付配列
+        |--------------------------------------------------------------------------
+        */
+
         $dates = [];
 
         $current = $start->copy();
@@ -63,9 +78,12 @@ class DailyReportController extends Controller
             $current->addDay();
         }
 
-        /**
-         * マップ
-         */
+        /*
+        |--------------------------------------------------------------------------
+        | 日報マップ
+        |--------------------------------------------------------------------------
+        */
+
         $reportMap = [];
 
         foreach ($dailyReports as $dailyReport) {
@@ -84,41 +102,104 @@ class DailyReportController extends Controller
             ];
         }
 
-        /**
-         * 月切替
-         */
-        $prevMonth = $month->copy()->subMonth()->format('Y-m');
+        /*
+        |--------------------------------------------------------------------------
+        | 月切替
+        |--------------------------------------------------------------------------
+        */
 
-        $nextMonth = $month->copy()->addMonth()->format('Y-m');
+        $prevMonth = $month
+            ->copy()
+            ->subMonth()
+            ->format('Y-m');
 
-        return view('daily_reports.index', compact(
-            'sites',
-            'dates',
-            'reportMap',
-            'month',
-            'prevMonth',
-            'nextMonth',
-        ));
+        $nextMonth = $month
+            ->copy()
+            ->addMonth()
+            ->format('Y-m');
+
+        return view(
+            'daily_reports.index',
+            compact(
+                'sites',
+                'dates',
+                'reportMap',
+                'month',
+                'prevMonth',
+                'nextMonth'
+            )
+        );
     }
 
     /**
-     * 新規画面
+     * 新規登録画面
      */
-    public function create()
+    public function create(Request $request)
     {
-        $sites = Site::activeAt(now())
+        /*
+        |--------------------------------------------------------------------------
+        | 日報日付
+        |--------------------------------------------------------------------------
+        | URLから work_date が渡された場合はその日付
+        | なければ今日
+        */
+
+        $workDate = $request->work_date
+            ? Carbon::parse($request->work_date)
+            : today();
+
+        /*
+        |--------------------------------------------------------------------------
+        | 現場
+        |--------------------------------------------------------------------------
+        */
+
+        $sites = Site::activeAt($workDate)
             ->orderBy('name')
             ->get();
 
-        $employees = Employee::orderBy('name')->get();
+        /*
+        |--------------------------------------------------------------------------
+        | 日報日付時点で在籍している社員
+        |--------------------------------------------------------------------------
+        */
 
-        $subcontractors = Subcontractor::orderBy('name')->get();
+        $employees = $this->getEmployedEmployees($workDate);
 
-        $workTypes = WorkType::orderBy('id')->get();
+        /*
+        |--------------------------------------------------------------------------
+        | 下請
+        |--------------------------------------------------------------------------
+        */
+
+        $subcontractors = Subcontractor::orderBy('name')
+            ->get();
+
+        /*
+        |--------------------------------------------------------------------------
+        | 作業内容
+        |--------------------------------------------------------------------------
+        */
+
+        $workTypes = WorkType::orderBy('id')
+            ->get();
+
+        /*
+        |--------------------------------------------------------------------------
+        | 勤務区分
+        |--------------------------------------------------------------------------
+        */
+
+        $attendanceTimes = AttendanceTime::orderBy('name')
+            ->get();
+
+        /*
+        |--------------------------------------------------------------------------
+        | 作業者プルダウン用
+        |--------------------------------------------------------------------------
+        */
 
         $workers = collect();
-
-        $attendanceTimes = AttendanceTime::orderBy('name')->get();
 
         foreach ($employees as $employee) {
 
@@ -138,12 +219,16 @@ class DailyReportController extends Controller
             ]);
         }
 
-        return view('daily_reports.create', compact(
-            'sites',
-            'workTypes',
-            'workers',
-            'attendanceTimes',
-        ));
+        return view(
+            'daily_reports.create',
+            compact(
+                'sites',
+                'workTypes',
+                'workers',
+                'attendanceTimes',
+                'workDate'
+            )
+        );
     }
 
     /**
@@ -157,18 +242,25 @@ class DailyReportController extends Controller
         ]);
 
         /*
-    |--------------------------------------------------------------------------
-    | 下請の作業内容重複チェック
-    |--------------------------------------------------------------------------
-    */
+        |--------------------------------------------------------------------------
+        | 下請の作業内容重複チェック
+        |--------------------------------------------------------------------------
+        |
+        | DBに既に存在する場合
+        | ＋
+        | 今回のフォーム内で複数登録されている場合
+        |
+        */
 
-        $warnings = $this->checkSubcontractorWorkTypeConflicts($request);
+        $warnings = $this->checkSubcontractorWorkTypeConflicts(
+            $request
+        );
 
         /*
-    |--------------------------------------------------------------------------
-    | 確認済みでない場合は登録を止める
-    |--------------------------------------------------------------------------
-    */
+        |--------------------------------------------------------------------------
+        | 確認されていない場合は登録を止める
+        |--------------------------------------------------------------------------
+        */
 
         if (
             !empty($warnings)
@@ -177,22 +269,25 @@ class DailyReportController extends Controller
 
             return back()
                 ->withInput()
-                ->with('subcontractor_confirmations', $warnings);
+                ->with(
+                    'subcontractor_confirmations',
+                    $warnings
+                );
         }
 
         /*
-    |--------------------------------------------------------------------------
-    | 日報作成
-    |--------------------------------------------------------------------------
-    */
+        |--------------------------------------------------------------------------
+        | 日報作成
+        |--------------------------------------------------------------------------
+        */
 
         $dailyReport = $this->createDailyReport($request);
 
         /*
-    |--------------------------------------------------------------------------
-    | 作業者保存
-    |--------------------------------------------------------------------------
-    */
+        |--------------------------------------------------------------------------
+        | 作業者保存
+        |--------------------------------------------------------------------------
+        */
 
         $duplicateWorkers = $this->saveWorkers(
             $request,
@@ -200,21 +295,28 @@ class DailyReportController extends Controller
         );
 
         /*
-    |--------------------------------------------------------------------------
-    | 現場費保存
-    |--------------------------------------------------------------------------
-    */
+        |--------------------------------------------------------------------------
+        | 現場費保存
+        |--------------------------------------------------------------------------
+        */
 
         $this->saveItems(
             $request,
             $dailyReport
         );
 
+        /*
+        |--------------------------------------------------------------------------
+        | 完了メッセージ
+        |--------------------------------------------------------------------------
+        */
+
         $message = '日報を登録しました';
 
         if (!empty($duplicateWorkers)) {
 
-            $message .= '（一部重複した作業者は登録されませんでした）';
+            $message .=
+                '（一部重複した作業者は登録されませんでした）';
         }
 
         return redirect()
@@ -222,8 +324,9 @@ class DailyReportController extends Controller
             ->with('success', $message);
     }
 
-
-
+    /**
+     * 詳細
+     */
     public function show(DailyReport $dailyReport)
     {
         $dailyReport->load([
@@ -233,32 +336,85 @@ class DailyReportController extends Controller
             'details.workType',
         ]);
 
-        return view('daily_reports.show', compact('dailyReport'));
+        return view(
+            'daily_reports.show',
+            compact('dailyReport')
+        );
     }
 
+    /**
+     * 編集画面
+     */
     public function edit(DailyReport $dailyReport)
     {
-        $dailyReport->load('details');
-
-        $sites = Site::activeAt($dailyReport->work_date)
-            ->orWhere('id', $dailyReport->site_id)
-            ->orderBy('name')
-            ->get();
-
-        $employees = Employee::orderBy('name')->get();
-
-        $subcontractors = Subcontractor::orderBy('name')->get();
-
-        $workTypes = WorkType::orderBy('id')->get();
-
-        $workers = collect();
-        $attendanceTimes =
-            AttendanceTime::orderBy('name')->get();
+        /*
+        |--------------------------------------------------------------------------
+        | 日報
+        |--------------------------------------------------------------------------
+        */
 
         $dailyReport->load([
             'details',
             'items',
         ]);
+
+        $workDate = $dailyReport->work_date;
+
+        /*
+        |--------------------------------------------------------------------------
+        | 現場
+        |--------------------------------------------------------------------------
+        */
+
+        $sites = Site::activeAt($workDate)
+            ->orWhere('id', $dailyReport->site_id)
+            ->orderBy('name')
+            ->get();
+
+        /*
+        |--------------------------------------------------------------------------
+        | 日報日付時点で在籍している社員
+        |--------------------------------------------------------------------------
+        */
+
+        $employees = $this->getEmployedEmployees(
+            $workDate
+        );
+
+        /*
+        |--------------------------------------------------------------------------
+        | 下請
+        |--------------------------------------------------------------------------
+        */
+
+        $subcontractors = Subcontractor::orderBy('name')
+            ->get();
+
+        /*
+        |--------------------------------------------------------------------------
+        | 作業内容
+        |--------------------------------------------------------------------------
+        */
+
+        $workTypes = WorkType::orderBy('id')
+            ->get();
+
+        /*
+        |--------------------------------------------------------------------------
+        | 勤務区分
+        |--------------------------------------------------------------------------
+        */
+
+        $attendanceTimes = AttendanceTime::orderBy('name')
+            ->get();
+
+        /*
+        |--------------------------------------------------------------------------
+        | 作業者プルダウン
+        |--------------------------------------------------------------------------
+        */
+
+        $workers = collect();
 
         foreach ($employees as $employee) {
 
@@ -278,15 +434,21 @@ class DailyReportController extends Controller
             ]);
         }
 
-        return view('daily_reports.edit', compact(
-            'dailyReport',
-            'sites',
-            'workTypes',
-            'workers',
-            'attendanceTimes',
-        ));
+        return view(
+            'daily_reports.edit',
+            compact(
+                'dailyReport',
+                'sites',
+                'workTypes',
+                'workers',
+                'attendanceTimes'
+            )
+        );
     }
 
+    /**
+     * 更新
+     */
     public function update(
         Request $request,
         DailyReport $dailyReport
@@ -297,29 +459,104 @@ class DailyReportController extends Controller
             'work_date' => 'required|date',
         ]);
 
+        /*
+        |--------------------------------------------------------------------------
+        | 日付変更後の社員在籍チェック
+        |--------------------------------------------------------------------------
+        */
+
+        /*
+        |--------------------------------------------------------------------------
+        | 下請の作業内容重複チェック
+        |--------------------------------------------------------------------------
+        |
+        | 更新時も
+        | DBに存在するもの
+        | ＋
+        | 今回フォーム内のもの
+        |
+        | を確認する
+        */
+
+        $warnings = $this->checkSubcontractorWorkTypeConflicts(
+            $request,
+            $dailyReport
+        );
+
+        /*
+        |--------------------------------------------------------------------------
+        | 未確認なら更新を止める
+        |--------------------------------------------------------------------------
+        */
+
+        if (
+            !empty($warnings)
+            && !$request->boolean('confirm_subcontractor')
+        ) {
+
+            return back()
+                ->withInput()
+                ->with(
+                    'subcontractor_confirmations',
+                    $warnings
+                );
+        }
+
+        /*
+        |--------------------------------------------------------------------------
+        | 日報本体更新
+        |--------------------------------------------------------------------------
+        */
+
         $this->updateDailyReport(
             $request,
             $dailyReport
         );
 
+        /*
+        |--------------------------------------------------------------------------
+        | 既存明細削除
+        |--------------------------------------------------------------------------
+        */
+
         $dailyReport->details()->delete();
+
         $dailyReport->items()->delete();
+
+        /*
+        |--------------------------------------------------------------------------
+        | 作業者保存
+        |--------------------------------------------------------------------------
+        */
 
         $duplicateWorkers = $this->saveWorkers(
             $request,
             $dailyReport
         );
 
+        /*
+        |--------------------------------------------------------------------------
+        | 現場費保存
+        |--------------------------------------------------------------------------
+        */
+
         $this->saveItems(
             $request,
             $dailyReport
         );
 
+        /*
+        |--------------------------------------------------------------------------
+        | 完了メッセージ
+        |--------------------------------------------------------------------------
+        */
+
         $message = '日報を更新しました';
 
         if (!empty($duplicateWorkers)) {
 
-            $message .= '（一部重複した作業者は登録されませんでした）';
+            $message .=
+                '（一部重複した作業者は登録されませんでした）';
         }
 
         return redirect()
@@ -330,8 +567,12 @@ class DailyReportController extends Controller
             ->with('success', $message);
     }
 
-    private function createDailyReport(Request $request)
-    {
+    /**
+     * 日報作成
+     */
+    private function createDailyReport(
+        Request $request
+    ) {
         return DailyReport::firstOrCreate(
             [
                 'site_id' => $request->site_id,
@@ -343,10 +584,14 @@ class DailyReportController extends Controller
         );
     }
 
+    /**
+     * 日報更新
+     */
     private function updateDailyReport(
         Request $request,
         DailyReport $dailyReport
     ) {
+
         $dailyReport->update([
 
             'site_id' => $request->site_id,
@@ -358,6 +603,35 @@ class DailyReportController extends Controller
         ]);
     }
 
+    /**
+     * 在籍中の社員取得
+     */
+    private function getEmployedEmployees(
+        Carbon $workDate
+    ) {
+
+        return Employee::whereDate(
+            'hire_date',
+            '<=',
+            $workDate
+        )
+            ->where(function ($query) use ($workDate) {
+
+                $query
+                    ->whereNull('retirement_date')
+                    ->orWhereDate(
+                        'retirement_date',
+                        '>=',
+                        $workDate
+                    );
+            })
+            ->orderBy('name')
+            ->get();
+    }
+
+    /**
+     * 作業者保存
+     */
     private function saveWorkers(
         Request $request,
         DailyReport $dailyReport
@@ -369,13 +643,23 @@ class DailyReportController extends Controller
 
         $client = $dailyReport->site->client;
 
-        foreach ($request->worker as $index => $worker) {
+        foreach ($request->worker ?? [] as $index => $worker) {
 
             if (!$worker) {
                 continue;
             }
 
-            [$type, $id] = explode('_', $worker);
+            /*
+            |--------------------------------------------------------------------------
+            | workerを分解
+            |--------------------------------------------------------------------------
+            */
+
+            [$type, $id] = explode(
+                '_',
+                $worker,
+                2
+            );
 
             $employeeId = $type === 'employee'
                 ? $id
@@ -385,21 +669,47 @@ class DailyReportController extends Controller
                 ? $id
                 : null;
 
-            $workTypeId = $request->work_type_id[$index];
+            $workTypeId =
+                $request->work_type_id[$index] ?? null;
+
+            if (!$workTypeId) {
+                continue;
+            }
 
             /*
-     * 社員：
-     * 作業内容に関係なく同じ社員なら重複
-     *
-     * 下請：
-     * 同じ会社＋同じ作業内容なら重複
-     */
+            |--------------------------------------------------------------------------
+            | 社員の在籍チェック
+            |--------------------------------------------------------------------------
+            */
+
+            if ($employeeId) {
+
+                $employee = Employee::find(
+                    $employeeId
+                );
+
+                if (
+                    !$employee ||
+                    !$employee->isEmployedAt(
+                        $dailyReport->work_date
+                    )
+                ) {
+                    continue;
+                }
+            }
+
+            /*
+            |--------------------------------------------------------------------------
+            | 重複チェック
+            |--------------------------------------------------------------------------
+            */
+
             if (
                 $this->isDuplicateWorker(
                     $dailyReport,
                     $employeeId,
                     $subcontractorId,
-                    $request->work_type_id[$index]
+                    $workTypeId
                 )
             ) {
 
@@ -409,22 +719,10 @@ class DailyReportController extends Controller
             }
 
             /*
-     * 下請で、
-     * 同じ会社だが違う作業内容がすでに存在する場合
-     */
-            if (
-                $subcontractorId &&
-                $this->hasDifferentSubcontractorWork(
-                    $dailyReport,
-                    $subcontractorId,
-                    $workTypeId
-                )
-            ) {
-
-                /*
-         * ここは後ほど確認処理を入れる
-         */
-            }
+            |--------------------------------------------------------------------------
+            | 明細作成
+            |--------------------------------------------------------------------------
+            */
 
             $this->createDetail(
                 $request,
@@ -439,228 +737,88 @@ class DailyReportController extends Controller
         return $duplicateWorkers;
     }
 
+    /**
+     * 作業者重複チェック
+     */
     private function isDuplicateWorker(
         DailyReport $dailyReport,
         $employeeId,
         $subcontractorId,
         $workTypeId
     ) {
+
         $query = DailyReportDetail::where(
             'daily_report_id',
             $dailyReport->id
         );
 
         /*
-     * 社員
-     *
-     * 同じ社員が同じ日報に存在したら、
-     * 作業内容に関係なく重複
-     */
+        |--------------------------------------------------------------------------
+        | 社員
+        |--------------------------------------------------------------------------
+        |
+        | 同じ社員が同じ日報に存在したら、
+        | 作業内容に関係なく重複
+        */
+
         if ($employeeId) {
 
             return $query
-                ->where('employee_id', $employeeId)
+                ->where(
+                    'employee_id',
+                    $employeeId
+                )
                 ->exists();
         }
 
         /*
-     * 下請
-     *
-     * 同じ会社＋同じ作業内容なら重複
-     *
-     * 作業内容が違う場合は登録可能
-     */
+        |--------------------------------------------------------------------------
+        | 下請
+        |--------------------------------------------------------------------------
+        |--------------------------------------------------------------------------
+        | 同じ会社＋同じ作業内容なら重複
+        |
+        | 同じ会社でも作業内容が違えば登録可能
+        */
+
         if ($subcontractorId) {
 
             return $query
-                ->where('subcontractor_id', $subcontractorId)
-                ->where('work_type_id', $workTypeId)
+                ->where(
+                    'subcontractor_id',
+                    $subcontractorId
+                )
+                ->where(
+                    'work_type_id',
+                    $workTypeId
+                )
                 ->exists();
         }
 
         return false;
     }
 
-    private function hasDifferentSubcontractorWorkType(
-        DailyReport $dailyReport,
-        $subcontractorId,
-        $workTypeId
-    ) {
-        if (!$subcontractorId) {
-            return false;
-        }
-
-        return DailyReportDetail::where(
-            'daily_report_id',
-            $dailyReport->id
-        )
-            ->where('subcontractor_id', $subcontractorId)
-            ->where('work_type_id', '!=', $workTypeId)
-            ->exists();
-    }
-
-    private function hasDifferentSubcontractorWork(
-        DailyReport $dailyReport,
-        $subcontractorId,
-        $workTypeId
-    ) {
-        return DailyReportDetail::where(
-            'daily_report_id',
-            $dailyReport->id
-        )
-            ->where('subcontractor_id', $subcontractorId)
-            ->where('work_type_id', '!=', $workTypeId)
-            ->exists();
-    }
-
-    private function createDetail(
-        Request $request,
-        DailyReport $dailyReport,
-        $client,
-        $employeeId,
-        $subcontractorId,
-        $index
-    ) {
-
-        $attendance = $this->findAttendance(
-            $request,
-            $index
-        );
-
-        $workType = WorkType::find(
-            $request->work_type_id[$index]
-        );
-
-        $unitPrice = $this->getUnitPrice(
-            $client,
-            $workType
-        );
-
-        $manHours = $request->man_hours[$index];
-
-        $overtimeHours = $request->overtime_hours[$index] ?? 0;
-
-        $sales = $this->calculateSales(
-            $unitPrice,
-            $manHours,
-            $overtimeHours
-        );
-
-        DailyReportDetail::create([
-
-            'daily_report_id' => $dailyReport->id,
-            'employee_id' => $employeeId,
-            'subcontractor_id' => $subcontractorId,
-            'work_type_id' => $request->work_type_id[$index],
-            'man_hours' => $manHours,
-            'overtime_hours' => $overtimeHours,
-            'transportation_cost' => $request->transportation_cost[$index] ?? 0,
-            'expressway_cost' => $request->expressway_cost[$index] ?? 0,
-            'parking_cost' => $request->parking_cost[$index] ?? 0,
-            'sales' => $sales,
-            'note' => $request->detail_note[$index] ?? null,
-            'attendance_time_name' => $attendance?->name,
-            'start_time' => $attendance?->start_time,
-            'end_time' => $attendance?->end_time,
-        ]);
-    }
-
-    private function saveItems(
-        Request $request,
-        DailyReport $dailyReport
-    ) {
-
-        foreach ($request->item_name ?? [] as $index => $name) {
-
-            if (empty($name)) {
-
-                continue;
-            }
-
-            $quantity = $request->item_quantity[$index] ?? 1;
-
-            DailyReportItem::create([
-
-                'daily_report_id' => $dailyReport->id,
-
-                'category' => $request->item_category[$index] ?? '貸出',
-
-                'name' => $name,
-
-                'quantity' => $quantity,
-
-                'unit' => $request->item_unit[$index] ?? null,
-
-                'unit_price' => 0,
-
-                'amount' => 0,
-
-                'note' => $request->item_note[$index] ?? null,
-
-            ]);
-        }
-    }
-
-    private function calculateSales(
-        float $unitPrice,
-        float $manHours,
-        float $overtimeHours
-    ): float {
-
-        $sales = $unitPrice * $manHours;
-
-        $sales += ($unitPrice / 8) * 1.25 * $overtimeHours;
-
-        return $sales;
-    }
-
-    private function findAttendance(
-        Request $request,
-        int $index
-    ): ?AttendanceTime {
-
-        if (empty($request->attendance_time_id[$index])) {
-            return null;
-        }
-
-        return AttendanceTime::find(
-            $request->attendance_time_id[$index]
-        );
-    }
-
-    private function getUnitPrice($client, WorkType $workType): int
-    {
-        return match ($workType->name) {
-
-            '解体工' => $client->demolition_unit_price,
-
-            '重機' => $client->heavy_equipment_unit_price,
-
-            '重機2' => $client->heavy_equipment2_unit_price,
-
-            'はつり' => $client->chipping_unit_price,
-
-            '石綿' => $client->asbestos_unit_price,
-
-            'トラック' => $client->truck_unit_price,
-
-            'ユニック' => $client->unic_unit_price,
-
-            default => 0,
-        };
-    }
-
+    /**
+     * 下請の作業内容重複確認
+     *
+     * DBに既存
+     * ＋
+     * 今回フォーム内
+     *
+     * の両方を確認する
+     */
     private function checkSubcontractorWorkTypeConflicts(
-        Request $request
+        Request $request,
+        ?DailyReport $editingDailyReport = null
     ): array {
 
         $warnings = [];
 
         /*
-    |--------------------------------------------------------------------------
-    | 同じ現場・同じ日の日報を取得
-    |--------------------------------------------------------------------------
-    */
+        |--------------------------------------------------------------------------
+        | 現在の日報を取得
+        |--------------------------------------------------------------------------
+        */
 
         $dailyReport = DailyReport::where(
             'site_id',
@@ -673,37 +831,52 @@ class DailyReportController extends Controller
             ->first();
 
         /*
-    |--------------------------------------------------------------------------
-    | まだ日報が存在しない場合はチェック不要
-    |--------------------------------------------------------------------------
-    */
+        |--------------------------------------------------------------------------
+        | 更新時
+        |--------------------------------------------------------------------------
+        | site_id / work_date が変更されていない場合は
+        | 編集対象の日報そのものを使用
+        */
 
-        if (!$dailyReport) {
-            return $warnings;
+        if (
+            $editingDailyReport &&
+            $editingDailyReport->site_id == $request->site_id &&
+            $editingDailyReport->work_date->format('Y-m-d')
+                === Carbon::parse($request->work_date)->format('Y-m-d')
+        ) {
+
+            $dailyReport = $editingDailyReport;
         }
 
         /*
-    |--------------------------------------------------------------------------
-    | 既存の明細
-    |--------------------------------------------------------------------------
-    */
+        |--------------------------------------------------------------------------
+        | DB上の既存明細
+        |--------------------------------------------------------------------------
+        */
 
-        $existingDetails = DailyReportDetail::with([
-            'subcontractor',
-            'workType',
-        ])
-            ->where(
-                'daily_report_id',
-                $dailyReport->id
-            )
-            ->whereNotNull('subcontractor_id')
-            ->get();
+        $existingDetails = collect();
+
+        if ($dailyReport) {
+
+            $existingDetails = DailyReportDetail::with([
+                'subcontractor',
+                'workType',
+            ])
+                ->where(
+                    'daily_report_id',
+                    $dailyReport->id
+                )
+                ->whereNotNull('subcontractor_id')
+                ->get();
+        }
 
         /*
-    |--------------------------------------------------------------------------
-    | 今回POSTされた作業者
-    |--------------------------------------------------------------------------
-    */
+        |--------------------------------------------------------------------------
+        | 今回フォーム内の下請を整理
+        |--------------------------------------------------------------------------
+        */
+
+        $formSubcontractors = [];
 
         foreach ($request->worker ?? [] as $index => $worker) {
 
@@ -711,17 +884,16 @@ class DailyReportController extends Controller
                 continue;
             }
 
-            /*
-        |--------------------------------------------------------------------------
-        | 下請だけを対象にする
-        |--------------------------------------------------------------------------
-        */
-
-            if (!str_starts_with($worker, 'subcontractor_')) {
+            if (
+                !str_starts_with(
+                    $worker,
+                    'subcontractor_'
+                )
+            ) {
                 continue;
             }
 
-            $subcontractorId = str_replace(
+            $subcontractorId = (int) str_replace(
                 'subcontractor_',
                 '',
                 $worker
@@ -734,94 +906,545 @@ class DailyReportController extends Controller
                 continue;
             }
 
-            /*
-        |--------------------------------------------------------------------------
-        | 同じ下請会社の既存登録を検索
-        |--------------------------------------------------------------------------
-        */
+            $formSubcontractors[] = [
 
-            $existing = $existingDetails->first(
-                fn($detail) =>
-                (int) $detail->subcontractor_id
-                    === (int) $subcontractorId
-            );
+                'subcontractor_id' =>
+                    $subcontractorId,
 
-            /*
-        |--------------------------------------------------------------------------
-        | 既存登録がない場合
-        |--------------------------------------------------------------------------
-        */
+                'work_type_id' =>
+                    (int) $workTypeId,
 
-            if (!$existing) {
-                continue;
-            }
-
-            /*
-        |--------------------------------------------------------------------------
-        | 同じ作業内容なら通常の重複
-        |--------------------------------------------------------------------------
-        */
-
-            if (
-                (int) $existing->work_type_id
-                === (int) $workTypeId
-            ) {
-                continue;
-            }
-
-            /*
-        |--------------------------------------------------------------------------
-        | 別の作業内容なら確認
-        |--------------------------------------------------------------------------
-        */
-
-            $newWorkType = WorkType::find($workTypeId);
-
-            $subcontractorName =
-                $existing->subcontractor?->name
-                ?? '下請会社';
-
-            $existingWorkType =
-                $existing->workType?->name
-                ?? '作業内容不明';
-
-            $newWorkTypeName =
-                $newWorkType?->name
-                ?? '作業内容不明';
-
-            $warnings[] = [
-                'subcontractor_id' => $subcontractorId,
-                'subcontractor_name' => $subcontractorName,
-                'existing_work_type' => $existingWorkType,
-                'new_work_type' => $newWorkTypeName,
+                'index' => $index,
             ];
         }
+
+        /*
+        |--------------------------------------------------------------------------
+        | DBとの比較
+        |--------------------------------------------------------------------------
+        */
+
+        foreach ($formSubcontractors as $form) {
+
+            $existingDetailsForCompany =
+                $existingDetails->filter(
+                    fn($detail) =>
+                    (int) $detail->subcontractor_id
+                        === $form['subcontractor_id']
+                );
+
+            foreach (
+                $existingDetailsForCompany
+                as $existing
+            ) {
+
+                /*
+                |--------------------------------------------------------------------------
+                | 同じ作業内容
+                |--------------------------------------------------------------------------
+                |
+                | これは通常の重複扱いなので
+                | 確認ダイアログは出さない
+                */
+
+                if (
+                    (int) $existing->work_type_id
+                    === $form['work_type_id']
+                ) {
+                    continue;
+                }
+
+                /*
+                |--------------------------------------------------------------------------
+                | 違う作業内容
+                |--------------------------------------------------------------------------
+                */
+
+                $this->addSubcontractorWarning(
+                    $warnings,
+                    $existing->subcontractor,
+                    $existing->workType,
+                    WorkType::find(
+                        $form['work_type_id']
+                    )
+                );
+            }
+        }
+
+        /*
+        |--------------------------------------------------------------------------
+        | 今回フォーム内の比較
+        |--------------------------------------------------------------------------
+        |
+        | 例：
+        |
+        | A社・解体
+        | A社・石綿
+        |
+        | のような場合
+        */
+
+        $grouped =
+            collect($formSubcontractors)
+                ->groupBy('subcontractor_id');
+
+        foreach ($grouped as $subcontractorId => $rows) {
+
+            /*
+            |--------------------------------------------------------------------------
+            | 作業内容を重複除去
+            |--------------------------------------------------------------------------
+            */
+
+            $workTypeIds =
+                $rows
+                    ->pluck('work_type_id')
+                    ->unique()
+                    ->values();
+
+            /*
+            |--------------------------------------------------------------------------
+            | 同じ会社に違う作業内容がある場合
+            |--------------------------------------------------------------------------
+            */
+
+            if ($workTypeIds->count() <= 1) {
+                continue;
+            }
+
+            $subcontractor =
+                Subcontractor::find(
+                    $subcontractorId
+                );
+
+            /*
+            |--------------------------------------------------------------------------
+            | 作業内容の組み合わせを確認
+            |--------------------------------------------------------------------------
+            */
+
+            $workTypeNames = $workTypeIds
+                ->map(function ($workTypeId) {
+
+                    return WorkType::find(
+                        $workTypeId
+                    )?->name ?? '作業内容不明';
+                })
+                ->values();
+
+            /*
+            |--------------------------------------------------------------------------
+            | 確認メッセージ
+            |--------------------------------------------------------------------------
+            */
+
+            $warnings[] = [
+
+                'type' => 'form',
+
+                'subcontractor_id' =>
+                    $subcontractorId,
+
+                'subcontractor_name' =>
+                    $subcontractor?->name
+                    ?? '下請会社',
+
+                'existing_work_type' =>
+                    $workTypeNames->implode('、'),
+
+                'new_work_type' =>
+                    '複数の作業内容',
+
+            ];
+        }
+
+        /*
+        |--------------------------------------------------------------------------
+        | 重複除去
+        |--------------------------------------------------------------------------
+        */
+
+        $warnings = collect($warnings)
+            ->unique(function ($warning) {
+
+                return implode('|', [
+                    $warning['subcontractor_id'] ?? '',
+                    $warning['existing_work_type'] ?? '',
+                    $warning['new_work_type'] ?? '',
+                    $warning['type'] ?? '',
+                ]);
+            })
+            ->values()
+            ->all();
 
         return $warnings;
     }
 
-    public function destroy(DailyReport $dailyReport)
-    {
-        DB::transaction(function () use ($dailyReport) {
+    /**
+     * 下請確認メッセージ追加
+     */
+    private function addSubcontractorWarning(
+        array &$warnings,
+        $subcontractor,
+        $existingWorkType,
+        $newWorkType
+    ) {
 
-            // 作業者明細を削除
-            DailyReportDetail::where(
-                'daily_report_id',
-                $dailyReport->id
-            )->delete();
+        $warnings[] = [
 
-            // 貸出・項目明細を削除
-            DailyReportItem::where(
-                'daily_report_id',
-                $dailyReport->id
-            )->delete();
+            'type' => 'database',
 
-            // 日報本体を削除
-            $dailyReport->delete();
-        });
+            'subcontractor_id' =>
+                $subcontractor?->id,
+
+            'subcontractor_name' =>
+                $subcontractor?->name
+                ?? '下請会社',
+
+            'existing_work_type' =>
+                $existingWorkType?->name
+                ?? '作業内容不明',
+
+            'new_work_type' =>
+                $newWorkType?->name
+                ?? '作業内容不明',
+        ];
+    }
+
+    /**
+     * 明細作成
+     */
+    private function createDetail(
+        Request $request,
+        DailyReport $dailyReport,
+        $client,
+        $employeeId,
+        $subcontractorId,
+        $index
+    ) {
+
+        /*
+        |--------------------------------------------------------------------------
+        | 勤務区分
+        |--------------------------------------------------------------------------
+        */
+
+        $attendance = $this->findAttendance(
+            $request,
+            $index
+        );
+
+        /*
+        |--------------------------------------------------------------------------
+        | 作業内容
+        |--------------------------------------------------------------------------
+        */
+
+        $workType = WorkType::find(
+            $request->work_type_id[$index]
+        );
+
+        /*
+        |--------------------------------------------------------------------------
+        | 単価
+        |--------------------------------------------------------------------------
+        */
+
+        $unitPrice = $this->getUnitPrice(
+            $client,
+            $workType
+        );
+
+        /*
+        |--------------------------------------------------------------------------
+        | 人工
+        |--------------------------------------------------------------------------
+        */
+
+        $manHours =
+            $request->man_hours[$index] ?? 0;
+
+        /*
+        |--------------------------------------------------------------------------
+        | 残業
+        |--------------------------------------------------------------------------
+        */
+
+        $overtimeHours =
+            $request->overtime_hours[$index] ?? 0;
+
+        /*
+        |--------------------------------------------------------------------------
+        | 売上
+        |--------------------------------------------------------------------------
+        */
+
+        $sales = $this->calculateSales(
+            $unitPrice,
+            $manHours,
+            $overtimeHours
+        );
+
+        /*
+        |--------------------------------------------------------------------------
+        | 保存
+        |--------------------------------------------------------------------------
+        */
+
+        DailyReportDetail::create([
+
+            'daily_report_id' =>
+                $dailyReport->id,
+
+            'employee_id' =>
+                $employeeId,
+
+            'subcontractor_id' =>
+                $subcontractorId,
+
+            'work_type_id' =>
+                $request->work_type_id[$index],
+
+            'man_hours' =>
+                $manHours,
+
+            'overtime_hours' =>
+                $overtimeHours,
+
+            'transportation_cost' =>
+                $request->transportation_cost[$index] ?? 0,
+
+            'expressway_cost' =>
+                $request->expressway_cost[$index] ?? 0,
+
+            'parking_cost' =>
+                $request->parking_cost[$index] ?? 0,
+
+            'sales' =>
+                $sales,
+
+            'note' =>
+                $request->detail_note[$index] ?? null,
+
+            'attendance_time_name' =>
+                $attendance?->name,
+
+            'start_time' =>
+                $attendance?->start_time,
+
+            'end_time' =>
+                $attendance?->end_time,
+        ]);
+    }
+
+    /**
+     * 現場費保存
+     */
+    private function saveItems(
+        Request $request,
+        DailyReport $dailyReport
+    ) {
+
+        foreach (
+            $request->item_name ?? []
+            as $index => $name
+        ) {
+
+            if (empty($name)) {
+                continue;
+            }
+
+            $quantity =
+                $request->item_quantity[$index] ?? 1;
+
+            DailyReportItem::create([
+
+                'daily_report_id' =>
+                    $dailyReport->id,
+
+                'category' =>
+                    $request->item_category[$index]
+                    ?? '貸出',
+
+                'name' =>
+                    $name,
+
+                'quantity' =>
+                    $quantity,
+
+                'unit' =>
+                    $request->item_unit[$index]
+                    ?? null,
+
+                'unit_price' => 0,
+
+                'amount' => 0,
+
+                'note' =>
+                    $request->item_note[$index]
+                    ?? null,
+            ]);
+        }
+    }
+
+    /**
+     * 売上計算
+     */
+    private function calculateSales(
+        float $unitPrice,
+        float $manHours,
+        float $overtimeHours
+    ): float {
+
+        $sales =
+            $unitPrice * $manHours;
+
+        $sales +=
+            ($unitPrice / 8)
+            * 1.25
+            * $overtimeHours;
+
+        return $sales;
+    }
+
+    /**
+     * 勤務区分取得
+     */
+    private function findAttendance(
+        Request $request,
+        int $index
+    ): ?AttendanceTime {
+
+        if (
+            empty(
+                $request->attendance_time_id[$index]
+                ?? null
+            )
+        ) {
+            return null;
+        }
+
+        return AttendanceTime::find(
+            $request->attendance_time_id[$index]
+        );
+    }
+
+    /**
+     * 作業内容別単価
+     */
+    private function getUnitPrice(
+        $client,
+        WorkType $workType
+    ): int {
+
+        return match ($workType->name) {
+
+            '解体工' =>
+                $client->demolition_unit_price,
+
+            '重機' =>
+                $client->heavy_equipment_unit_price,
+
+            '重機2' =>
+                $client->heavy_equipment2_unit_price,
+
+            'はつり' =>
+                $client->chipping_unit_price,
+
+            '石綿' =>
+                $client->asbestos_unit_price,
+
+            'トラック' =>
+                $client->truck_unit_price,
+
+            'ユニック' =>
+                $client->unic_unit_price,
+
+            default => 0,
+        };
+    }
+
+    /**
+     * 日報削除
+     */
+    public function destroy(
+        DailyReport $dailyReport
+    ) {
+
+        DB::transaction(
+            function () use ($dailyReport) {
+
+                /*
+                |--------------------------------------------------------------------------
+                | 作業者明細削除
+                |--------------------------------------------------------------------------
+                */
+
+                DailyReportDetail::where(
+                    'daily_report_id',
+                    $dailyReport->id
+                )->delete();
+
+                /*
+                |--------------------------------------------------------------------------
+                | 現場費削除
+                |--------------------------------------------------------------------------
+                */
+
+                DailyReportItem::where(
+                    'daily_report_id',
+                    $dailyReport->id
+                )->delete();
+
+                /*
+                |--------------------------------------------------------------------------
+                | 日報本体削除
+                |--------------------------------------------------------------------------
+                */
+
+                $dailyReport->delete();
+            }
+        );
 
         return redirect()
             ->route('daily-reports.index')
-            ->with('success', '日報を削除しました。');
+            ->with(
+                'success',
+                '日報を削除しました。'
+            );
+    }
+
+    /**
+     * 指定日付の在籍社員取得API
+     *
+     * create.blade.php の
+     * 日付変更時に使用
+     */
+    public function employeesByDate(
+        Request $request
+    ) {
+
+        $request->validate([
+            'work_date' => 'required|date',
+        ]);
+
+        $workDate = Carbon::parse(
+            $request->work_date
+        );
+
+        $employees =
+            $this->getEmployedEmployees(
+                $workDate
+            );
+
+        return response()->json(
+            $employees->map(function ($employee) {
+
+                return [
+                    'id' => $employee->id,
+                    'name' => $employee->name,
+                ];
+            })->values()
+        );
     }
 }
