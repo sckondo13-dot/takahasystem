@@ -12,22 +12,9 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('invoice_details', function (Blueprint $table) {
-            $table->foreignId('site_id')
-                ->nullable()
-                ->after('invoice_id')
-                ->constrained('sites')
-                ->nullOnDelete();
-
-            $table->foreignId('work_type_id')
-                ->nullable()
-                ->after('site_id')
-                ->constrained('work_types')
-                ->nullOnDelete();
-
             $table->string('source_type')
                 ->default('manual')
-                ->after('work_type_id')
-                ->comment('site / transportation / expressway / parking / site_expense / manual');
+                ->after('amount');
 
             $table->decimal('progress_rate', 5, 2)
                 ->nullable()
@@ -45,12 +32,7 @@ return new class extends Migration
     public function down(): void
     {
         Schema::table('invoice_details', function (Blueprint $table) {
-            $table->dropForeign(['site_id']);
-            $table->dropForeign(['work_type_id']);
-
             $table->dropColumn([
-                'site_id',
-                'work_type_id',
                 'source_type',
                 'progress_rate',
                 'remaining_rate',
