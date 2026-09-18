@@ -12,14 +12,17 @@ class Site extends Model
         'client_id',
         'name',
         'contract_type',
-        'status',
         'contract_start',
         'contract_end',
+        'contract_amount',
+        'remaining_rate',
     ];
 
     protected $casts = [
         'contract_start' => 'date',
-        'contract_end'   => 'date',
+        'contract_end' => 'date',
+        'contract_amount' => 'decimal:2',
+        'remaining_rate' => 'decimal:2',
     ];
 
     public function getStatusAttribute()
@@ -56,14 +59,16 @@ class Site extends Model
 
     public function scopeActiveAt($query, $date)
     {
-        $month = \Carbon\Carbon::parse($date)->startOfMonth();
+        $month = \Carbon\Carbon::parse($date);
+
+        $monthStart = $month->copy()->startOfMonth();
+        $monthEnd = $month->copy()->endOfMonth();
 
         return $query
-            ->whereDate('contract_start', '<=', $month)
-            ->where(function ($q) use ($month) {
-
+            ->whereDate('contract_start', '<=', $monthEnd)
+            ->where(function ($q) use ($monthStart) {
                 $q->whereNull('contract_end')
-                    ->orWhereDate('contract_end', '>=', $month);
+                    ->orWhereDate('contract_end', '>=', $monthStart);
             });
     }
 

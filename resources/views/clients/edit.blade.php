@@ -3,7 +3,7 @@
     <div class="max-w-3xl mx-auto py-10">
 
         <h1 class="text-2xl font-bold mb-5">
-            元請け登録
+            元請け編集
         </h1>
 
         <form action="{{ route('clients.update', $client) }}"
@@ -18,6 +18,18 @@
                     name="name"
                     class="w-full border rounded p-2"
                     value="{{ old('name', $client->name) }}">
+            </div>
+
+            <div>
+                <label class="block mb-1">
+                    住所
+                </label>
+
+                <textarea
+                    name="address"
+                    class="border rounded w-full"
+                    rows="2"
+                    placeholder="例：北海道札幌市○○区○○1-2-3">{{ old('address', $client->address) }}</textarea>
             </div>
 
             @php
@@ -53,7 +65,7 @@
 
             <button class="bg-blue-600 text-white px-5 py-2 rounded">
 
-                登録
+                更新
 
             </button>
 

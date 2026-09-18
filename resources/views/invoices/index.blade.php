@@ -2,12 +2,11 @@
 
     <div class="max-w-7xl mx-auto py-8">
 
+        {{-- ヘッダー --}}
         <div class="flex justify-between mb-5">
 
             <h1 class="text-2xl font-bold">
-
                 請求書一覧
-
             </h1>
 
             <a
@@ -20,7 +19,10 @@
 
         </div>
 
-        <form method="GET" class="mb-5 flex gap-3 flex-wrap">
+        {{-- 検索 --}}
+        <form
+            method="GET"
+            class="mb-5 flex gap-3 flex-wrap">
 
             <input
                 type="month"
@@ -33,9 +35,7 @@
                 class="border rounded p-2">
 
                 <option value="">
-
                     元請
-
                 </option>
 
                 @foreach($clients as $client)
@@ -57,24 +57,28 @@
                 class="border rounded p-2">
 
                 <option value="">
-
                     状態
-
                 </option>
 
-                <option value="draft">
+                <option
+                    value="draft"
+                    @selected(request('status')==='draft' )>
 
                     下書き
 
                 </option>
 
-                <option value="issued">
+                <option
+                    value="issued"
+                    @selected(request('status')==='issued' )>
 
                     発行済
 
                 </option>
 
-                <option value="paid">
+                <option
+                    value="paid"
+                    @selected(request('status')==='paid' )>
 
                     入金済
 
@@ -90,6 +94,7 @@
                 class="border rounded p-2">
 
             <button
+                type="submit"
                 class="bg-blue-600 text-white px-4 rounded">
 
                 検索
@@ -98,135 +103,150 @@
 
         </form>
 
-        <table class="w-full border">
+        {{-- 請求書一覧 --}}
+        <div class="overflow-x-auto">
 
-            <thead class="bg-gray-100">
+            <table class="w-full border">
 
-                <tr>
+                <thead class="bg-gray-100">
 
-                    <th class="border p-2">
+                    <tr>
 
-                        請求番号
+                        <th class="border p-2">
+                            請求番号
+                        </th>
 
-                    </th>
+                        <th class="border p-2">
+                            請求先
+                        </th>
 
-                    <th class="border p-2">
+                        <th class="border p-2">
+                            現場
+                        </th>
 
-                        請求先
+                        <th class="border p-2">
+                            請求日
+                        </th>
 
-                    </th>
+                        <th class="border p-2">
+                            金額
+                        </th>
 
-                    <th class="border p-2">
+                        <th class="border p-2">
+                            状態
+                        </th>
 
-                        現場
+                        <th class="border p-2">
+                            操作
+                        </th>
 
-                    </th>
+                    </tr>
 
-                    <th class="border p-2">
+                </thead>
 
-                        請求日
+                <tbody>
 
-                    </th>
+                    @forelse($invoices as $invoice)
 
-                    <th class="border p-2">
+                    <tr>
 
-                        金額
+                        <td class="border p-2">
+                            {{ $invoice->invoice_no }}
+                        </td>
 
-                    </th>
+                        <td class="border p-2">
+                            {{ $invoice->client->name }}
+                        </td>
 
-                    <th class="border p-2">
+                        <td class="border p-2">
 
-                        状態
+                            @php
+                            $siteNames = $invoice->details
+                            ->pluck('site.name')
+                            ->filter()
+                            ->unique()
+                            ->values();
+                            @endphp
 
-                    </th>
+                            {{ $siteNames->isNotEmpty()
+                                    ? $siteNames->implode('、')
+                                    : '現場指定なし' }}
 
-                    <th class="border p-2">
+                        </td>
 
-                        操作
+                        <td class="border p-2">
+                            {{ optional($invoice->invoice_date)->format('Y/m/d') }}
+                        </td>
 
-                    </th>
+                        <td class="border p-2 text-right">
+                            {{ number_format($invoice->total) }} 円
+                        </td>
 
-                </tr>
+                        <td class="border p-2">
 
-            </thead>
+                            @switch($invoice->status)
 
-            <tbody>
+                            @case('draft')
+                            下書き
+                            @break
 
-                @forelse($invoices as $invoice)
+                            @case('issued')
+                            発行済
+                            @break
 
-                <tr>
+                            @case('paid')
+                            入金済
+                            @break
 
-                    <td class="border p-2">
+                            @default
+                            {{ $invoice->status }}
 
-                        {{ $invoice->invoice_no }}
+                            @endswitch
 
-                    </td>
+                        </td>
 
-                    <td class="border p-2">
+                        <td class="border p-2">
 
-                        {{ $invoice->client->name }}
+                            <a
+                                href="{{ route('invoices.show', $invoice) }}"
+                                class="inline-block bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded">
 
-                    </td>
+                                詳細
 
-                    <td class="border p-2">
+                            </a>
 
-                        {{ optional($invoice->site)->name }}
+                        </td>
 
-                    </td>
+                    </tr>
 
-                    <td class="border p-2">
+                    @empty
 
-                        {{ $invoice->invoice_date->format('Y/m/d') }}
+                    <tr>
 
-                    </td>
+                        <td
+                            colspan="7"
+                            class="text-center p-5">
 
-                    <td class="border p-2 text-right">
+                            データがありません
 
-                        {{ number_format($invoice->total) }}
+                        </td>
 
-                    </td>
+                    </tr>
 
-                    <td class="border p-2">
+                    @endforelse
 
-                        {{ $invoice->status }}
+                </tbody>
 
-                    </td>
+            </table>
 
-                    <td class="border p-2">
+        </div>
 
-                        <a
-                            href="{{ route('invoices.edit',$invoice) }}"
-                            class="text-blue-600">
+        {{-- ページネーション --}}
+        <div class="mt-5">
 
-                            編集
+            {{ $invoices->links() }}
 
-                        </a>
-
-                    </td>
-
-                </tr>
-
-                @empty
-
-                <tr>
-
-                    <td
-                        colspan="7"
-                        class="text-center p-5">
-
-                        データがありません
-
-                    </td>
-
-                </tr>
-
-                @endforelse
-
-            </tbody>
-
-        </table>
-
-        {{ $invoices->links() }}
+        </div>
 
     </div>
 

@@ -9,6 +9,7 @@ class Client extends Model
 {
     protected $fillable = [
         'name',
+        'address',
         'demolition_unit_price',
         'heavy_equipment_unit_price',
         'heavy_equipment2_unit_price',

@@ -86,12 +86,14 @@ class SiteController extends Controller
     public function store(Request $request)
     {
         $request->validate([
-            'client_id' => 'required',
-            'name' => 'required|max:255',
-            'contract_type' => 'required',
-
-            'contract_start' => 'required|date',
+            'client_id' => 'required|exists:clients,id',
+            'name' => 'required|string|max:255',
+            'contract_type' => 'required|in:請負,常用',
+            'contract_start' => 'nullable|date',
             'contract_end' => 'nullable|date|after_or_equal:contract_start',
+
+            'contract_amount' => 'nullable|numeric|min:0',
+            'remaining_rate' => 'nullable|numeric|min:0|max:100',
         ]);
 
         Site::create([
@@ -100,6 +102,8 @@ class SiteController extends Controller
             'contract_type' => $request->contract_type,
             'contract_start' => $request->contract_start,
             'contract_end' => $request->contract_end,
+            'contract_amount' => $request->contract_amount ?? 0,
+            'remaining_rate' => $request->remaining_rate ?? 100,
         ]);
 
         return redirect()
@@ -126,12 +130,14 @@ class SiteController extends Controller
     public function update(Request $request, Site $site)
     {
         $request->validate([
-            'client_id' => 'required',
-            'name' => 'required|max:255',
-            'contract_type' => 'required',
-
-            'contract_start' => 'required|date',
+            'client_id' => 'required|exists:clients,id',
+            'name' => 'required|string|max:255',
+            'contract_type' => 'required|in:請負,常用',
+            'contract_start' => 'nullable|date',
             'contract_end' => 'nullable|date|after_or_equal:contract_start',
+
+            'contract_amount' => 'nullable|numeric|min:0',
+            'remaining_rate' => 'nullable|numeric|min:0|max:100',
         ]);
 
         $site->update([
@@ -140,6 +146,8 @@ class SiteController extends Controller
             'contract_type' => $request->contract_type,
             'contract_start' => $request->contract_start,
             'contract_end' => $request->contract_end,
+            'contract_amount' => $request->contract_amount ?? 0,
+            'remaining_rate' => $request->remaining_rate ?? 100,
         ]);
 
         return redirect()

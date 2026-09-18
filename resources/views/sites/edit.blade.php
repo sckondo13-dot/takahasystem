@@ -114,6 +114,44 @@
 
             </div>
             <div>
+                <label for="contract_amount" class="block mb-1">
+                    請負契約金額
+                </label>
+
+                <input
+                    type="number"
+                    id="contract_amount"
+                    name="contract_amount"
+                    value="{{ old('contract_amount', number_format($site->contract_amount, 0, '.', '')) }}"
+                    min="0"
+                    step="1"
+                    class="w-full border rounded p-2">
+
+                @error('contract_amount')
+                <p class="text-red-600 text-sm mt-1">{{ $message }}</p>
+                @enderror
+            </div>
+
+            <div>
+                <label for="remaining_rate" class="block mb-1">
+                    残率（％）
+                </label>
+
+                <input
+                    type="number"
+                    id="remaining_rate"
+                    name="remaining_rate"
+                    value="{{ old('remaining_rate', number_format($site->remaining_rate, 0, '.', '')) }}"
+                    min="0"
+                    max="100"
+                    step="1"
+                    class="w-full border rounded p-2">
+
+                @error('remaining_rate')
+                <p class="text-red-600 text-sm mt-1">{{ $message }}</p>
+                @enderror
+            </div>
+            <div>
                 <label>開始月</label>
                 <input
                     type="month"

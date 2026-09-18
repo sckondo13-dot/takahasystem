@@ -117,6 +117,12 @@ Route::middleware('auth')->group(function () {
         [InvoiceController::class, 'downloadPdf']
     )->name('invoices.pdf.download');
 
+    Route::get('/invoices/sites', [InvoiceController::class, 'getSites'])
+        ->name('invoices.sites');
+
+    Route::get('/invoices/site-details', [InvoiceController::class, 'getSiteDetails'])
+        ->name('invoices.site-details');
+
     Route::resource('invoices', InvoiceController::class);
 });
 

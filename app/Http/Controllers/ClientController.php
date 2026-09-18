@@ -32,6 +32,7 @@ class ClientController extends Controller
     {
         $request->validate([
             'name' => 'required|max:255',
+            'address' => 'nullable|string|max:1000',
         ]);
 
         Client::create($request->all());
@@ -56,6 +57,7 @@ class ClientController extends Controller
     {
         $request->validate([
             'name' => 'required|max:255',
+            'address' => 'nullable|string|max:1000',
         ]);
 
         $client->update($request->all());

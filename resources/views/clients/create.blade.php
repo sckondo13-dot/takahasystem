@@ -19,6 +19,18 @@
                     class="w-full border rounded p-2">
             </div>
 
+            <div>
+                <label class="block mb-1">
+                    住所
+                </label>
+
+                <textarea
+                    name="address"
+                    class="border rounded w-full"
+                    rows="2"
+                    placeholder="例：北海道札幌市○○区○○1-2-3"></textarea>
+            </div>
+
             @php
 
             $fields = [

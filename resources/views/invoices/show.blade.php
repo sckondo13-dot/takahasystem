@@ -69,30 +69,6 @@
                 <div>
 
                     <div class="text-gray-500 text-sm">
-                        現場
-                    </div>
-
-                    <div>
-                        {{ $invoice->site?->name ?? '現場指定なし' }}
-                    </div>
-
-                </div>
-
-                <div>
-
-                    <div class="text-gray-500 text-sm">
-                        請求月
-                    </div>
-
-                    <div>
-                        {{ $invoice->title }}
-                    </div>
-
-                </div>
-
-                <div>
-
-                    <div class="text-gray-500 text-sm">
                         請求日
                     </div>
 
@@ -113,6 +89,113 @@
                     </div>
 
                 </div>
+
+            </div>
+
+        </div>
+
+        {{-- 請求明細 --}}
+        <div class="border rounded p-5 mb-6">
+
+            <h2 class="text-lg font-bold mb-4">
+                請求明細
+            </h2>
+
+            <div class="overflow-x-auto">
+
+                <table class="w-full border-collapse">
+
+                    <thead>
+
+                        <tr class="bg-gray-100">
+
+                            <th class="border p-3 text-left">
+                                No.
+                            </th>
+
+                            <th class="border p-3 text-left">
+                                請求内容
+                            </th>
+
+                            <th class="border p-3 text-right">
+                                数量
+                            </th>
+
+                            <th class="border p-3 text-left">
+                                単位
+                            </th>
+
+                            <th class="border p-3 text-left">
+                                税区分
+                            </th>
+
+                            <th class="border p-3 text-right">
+                                単価
+                            </th>
+
+                            <th class="border p-3 text-right">
+                                金額
+                            </th>
+
+                        </tr>
+
+                    </thead>
+
+                    <tbody>
+
+                        @forelse($invoice->details as $detail)
+
+                        <tr>
+
+                            <td class="border p-3 text-center">
+                                {{ $detail->sort_order }}
+                            </td>
+
+                            <td class="border p-3">
+                                {{ $detail->description }}
+                            </td>
+
+                            <td class="border p-3 text-right">
+                                {{ number_format($detail->quantity, 2) }}
+                            </td>
+
+                            <td class="border p-3">
+                                {{ $detail->unit }}
+                            </td>
+
+                            <td class="border p-3">
+                                {{ $detail->tax_type === 'taxable' ? '課税' : '非課税' }}
+                            </td>
+
+                            <td class="border p-3 text-right">
+                                {{ number_format($detail->unit_price) }} 円
+                            </td>
+
+                            <td class="border p-3 text-right">
+                                {{ number_format($detail->amount) }} 円
+                            </td>
+
+                        </tr>
+
+                        @empty
+
+                        <tr>
+
+                            <td
+                                colspan="7"
+                                class="border p-3 text-center text-gray-500">
+
+                                明細がありません。
+
+                            </td>
+
+                        </tr>
+
+                        @endforelse
+
+                    </tbody>
+
+                </table>
 
             </div>
 
@@ -195,6 +278,14 @@
         <div class="flex gap-3">
 
             <a
+                href="{{ route('invoices.edit', $invoice) }}"
+                class="bg-yellow-500 hover:bg-yellow-600 text-white px-5 py-2 rounded">
+
+                編集
+
+            </a>
+
+            <a
                 href="{{ route('invoices.pdf', $invoice) }}"
                 target="_blank"
                 class="bg-red-600 hover:bg-red-700 text-white px-5 py-2 rounded">
@@ -208,6 +299,14 @@
                 class="bg-blue-600 hover:bg-blue-700 text-white px-5 py-2 rounded">
 
                 PDFダウンロード
+
+            </a>
+
+            <a
+                href="{{ route('invoices.index') }}"
+                class="bg-gray-500 hover:bg-gray-600 text-white px-5 py-2 rounded">
+
+                一覧へ戻る
 
             </a>
 
