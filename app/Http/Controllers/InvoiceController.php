@@ -97,6 +97,8 @@ class InvoiceController extends Controller
      */
     public function store(Request $request)
     {
+        \Log::info('InvoiceController@store START');
+        
         $validated = $request->validate([
             'client_id' => [
                 'required',
