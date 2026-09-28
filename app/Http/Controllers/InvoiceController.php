@@ -98,7 +98,7 @@ class InvoiceController extends Controller
     public function store(Request $request)
     {
         \Log::info('InvoiceController@store START');
-        
+
         $validated = $request->validate([
             'client_id' => [
                 'required',
@@ -197,12 +197,23 @@ class InvoiceController extends Controller
             ],
         ]);
 
+        \Log::info('InvoiceController@store AFTER VALIDATION', [
+            'client_id' => $validated['client_id'],
+            'detail_count' => count($validated['details']),
+        ]);
+
         $company = Company::firstOrFail();
+
+        \Log::info('InvoiceController@store AFTER COMPANY', [
+            'company_id' => $company->id,
+        ]);
 
         $invoice = DB::transaction(function () use (
             $validated,
             $company
         ) {
+
+            \Log::info('InvoiceController@store TRANSACTION START');
             /*
          * 請求番号を発行
          */
