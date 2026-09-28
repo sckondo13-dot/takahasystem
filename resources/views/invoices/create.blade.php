@@ -236,8 +236,7 @@
 
                     <button
                         type="button"
-                        id="add-detail"
-                        class="bg-gray-800 text-white rounded px-4 py-2 hover:bg-gray-700">
+                        class="add-detail-button bg-gray-800 text-white rounded px-4 py-2 hover:bg-gray-700">
                         ＋ 行追加
                     </button>
 
@@ -250,6 +249,11 @@
 
                     {{-- JavaScriptで追加 --}}
 
+                </div>
+
+                {{-- 下側の行追加 --}}
+                <div class="mt-6 pt-4 border-t flex justify-end">
+                    <button type="button" class="add-detail-button bg-gray-800 text-white rounded px-4 py-2 hover:bg-gray-700"> ＋ 行追加 </button>
                 </div>
 
             </div>
@@ -641,8 +645,8 @@
             const detailTemplate =
                 document.getElementById('detail-template');
 
-            const addDetailButton =
-                document.getElementById('add-detail');
+            const addDetailButtons =
+                document.querySelectorAll('.add-detail-button');
 
             const coverLetterArea =
                 document.getElementById('cover-letter-area');
@@ -1879,10 +1883,14 @@
             |--------------------------------------------------------------------------
             */
 
-            addDetailButton.addEventListener(
-                'click',
-                addDetail
-            );
+            addDetailButtons.forEach(function(button) {
+
+                button.addEventListener(
+                    'click',
+                    addDetail
+                );
+
+            });
 
 
             /*
@@ -1897,6 +1905,6 @@
 
         });
     </script>
-    ```
+
 
 </x-app-layout>
