@@ -8,6 +8,13 @@
         color: #222;
     }
 
+    .invoice-wrapper {
+        width: 100%;
+    }
+
+    /* =========================
+       タイトル
+    ========================= */
     .invoice-title {
         text-align: center;
         font-size: 24px;
@@ -16,139 +23,223 @@
         letter-spacing: 5px;
     }
 
-    .top-table {
+    /* =========================
+       ヘッダー
+    ========================= */
+    .header-table {
         width: 100%;
         border-collapse: collapse;
         margin-bottom: 15px;
-    }
-
-    .top-table td {
-        vertical-align: top;
     }
 
     .client-area {
         width: 55%;
-        font-size: 14px;
-        font-weight: bold;
-    }
-
-    .client-name {
-        border-bottom: 1px solid #333;
-        padding: 8px 5px;
-        font-size: 16px;
+        vertical-align: top;
     }
 
     .company-area {
         width: 45%;
+        vertical-align: top;
         text-align: right;
-        line-height: 1.7;
+    }
+
+    .client-label {
+        font-size: 11px;
+        margin-bottom: 4px;
+    }
+
+    .client-name {
+        font-size: 16px;
+        font-weight: bold;
+        border-bottom: 1px solid #222;
+        display: inline-block;
+        padding-bottom: 3px;
     }
 
     .company-name {
-        font-size: 15px;
+        font-size: 14px;
+        font-weight: bold;
+        margin-bottom: 5px;
+    }
+
+    .company-info {
+        line-height: 1.5;
+    }
+
+    .registration-number {
+        margin-top: 4px;
         font-weight: bold;
     }
 
-    .meta-table {
+    /* =========================
+       請求日など
+    ========================= */
+    .invoice-info-table {
         width: 100%;
         border-collapse: collapse;
         margin-bottom: 15px;
     }
 
-    .meta-table th {
-        width: 90px;
+    .invoice-info-table th,
+    .invoice-info-table td {
+        border: 1px solid #999;
+        padding: 6px 8px;
+    }
+
+    .invoice-info-table th {
         background: #f3f3f3;
-        border: 1px solid #999;
-        padding: 5px;
+        width: 15%;
         text-align: center;
+        font-weight: bold;
     }
 
-    .meta-table td {
-        border: 1px solid #999;
-        padding: 5px;
+    .invoice-info-table td {
+        width: 35%;
     }
 
-    .total-area {
-        margin: 15px 0;
-        border: 2px solid #333;
+    /* =========================
+       合計金額
+    ========================= */
+    .total-box {
+        width: 100%;
+        border: 2px solid #222;
+        margin: 15px 0 20px;
         padding: 10px 15px;
-        width: 55%;
+        box-sizing: border-box;
     }
 
     .total-label {
-        font-size: 11px;
+        font-size: 12px;
+        font-weight: bold;
     }
 
     .total-price {
-        font-size: 22px;
-        font-weight: bold;
         text-align: right;
+        font-size: 20px;
+        font-weight: bold;
     }
 
-    table.details {
+    /* =========================
+       明細
+    ========================= */
+    .section-title {
+        font-size: 12px;
+        font-weight: bold;
+        margin-bottom: 5px;
+    }
+
+    .details {
         width: 100%;
         border-collapse: collapse;
         table-layout: fixed;
-        margin-top: 10px;
     }
 
-    table.details th {
-        background: #e9e9e9;
-        border: 1px solid #777;
-        padding: 6px 4px;
+    .details th,
+    .details td {
+        border: 1px solid #999;
+        padding: 6px 5px;
+    }
+
+    .details th {
+        background: #f3f3f3;
         text-align: center;
         font-weight: bold;
     }
 
-    table.details td {
-        border: 1px solid #777;
-        padding: 6px 4px;
-        height: 24px;
+    .details td {
+        vertical-align: middle;
     }
 
-    .center {
+    /* 列幅 */
+    .details .site-col {
+        width: 19%;
+    }
+
+    .details .name-col {
+        width: 25%;
+    }
+
+    .details .quantity-col {
+        width: 8%;
+    }
+
+    .details .unit-col {
+        width: 8%;
+    }
+
+    .details .tax-col {
+        width: 10%;
+    }
+
+    .details .unit-price-col {
+        width: 14%;
+    }
+
+    .details .amount-col {
+        width: 16%;
+    }
+
+    .details .center {
         text-align: center;
     }
 
-    .right {
+    .details .right {
         text-align: right;
     }
 
-    .subtotal-area {
+    /* =========================
+       集計
+    ========================= */
+    .summary-area {
         width: 45%;
         margin-left: auto;
-        margin-top: 10px;
+        margin-top: 15px;
     }
 
-    .subtotal-area table {
+    .summary-area table {
         width: 100%;
         border-collapse: collapse;
     }
 
-    .subtotal-area th {
-        background: #f3f3f3;
-        border: 1px solid #777;
-        padding: 6px;
-        text-align: left;
+    .summary-area th,
+    .summary-area td {
+        border: 1px solid #999;
+        padding: 6px 8px;
     }
 
-    .subtotal-area td {
-        border: 1px solid #777;
-        padding: 6px;
+    .summary-area th {
+        width: 45%;
+        background: #f3f3f3;
+        text-align: center;
+    }
+
+    .summary-area td {
         text-align: right;
     }
 
-    .bank-area {
-        margin-top: 20px;
-        width: 60%;
+    .summary-total th,
+    .summary-total td {
+        font-size: 12px;
+        font-weight: bold;
     }
 
-    .section-title {
-        font-weight: bold;
-        font-size: 12px;
-        border-left: 4px solid #333;
-        padding-left: 7px;
-        margin-bottom: 5px;
+    /* =========================
+       下部
+    ========================= */
+    .bottom-table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 25px;
+    }
+
+    .bank-area {
+        width: 48%;
+        vertical-align: top;
+    }
+
+    .remarks-area {
+        width: 48%;
+        vertical-align: top;
     }
 
     .bank-table {
@@ -156,30 +247,31 @@
         border-collapse: collapse;
     }
 
-    .bank-table th {
-        background: #f3f3f3;
-        border: 1px solid #777;
-        padding: 5px;
-        width: 90px;
-    }
-
+    .bank-table th,
     .bank-table td {
-        border: 1px solid #777;
-        padding: 5px;
+        border: 1px solid #999;
+        padding: 5px 6px;
     }
 
-    .remarks {
-        margin-top: 20px;
+    .bank-table th {
+        width: 35%;
+        background: #f3f3f3;
+        text-align: center;
     }
 
     .remarks-box {
-        border: 1px solid #777;
-        min-height: 60px;
+        border: 1px solid #999;
+        min-height: 90px;
         padding: 8px;
+        box-sizing: border-box;
     }
 
     .small {
-        font-size: 8px;
+        font-size: 9px;
+    }
+
+    .nowrap {
+        white-space: nowrap;
     }
 </style>
 @endpush
@@ -187,374 +279,356 @@
 
 @section('content')
 
-{{-- タイトル --}}
-<div class="invoice-title">
-    請求書
-</div>
+<div class="invoice-wrapper">
 
-
-{{-- 請求先・請求元 --}}
-<table class="top-table">
-
-    <tr>
-
-        {{-- 請求先 --}}
-        <td class="client-area">
-
-            <div class="client-name">
-
-                {{ $invoice->client->name }} 御中
-
-            </div>
-
-        </td>
-
-
-        {{-- 請求元 --}}
-        <td class="company-area">
-
-            <div class="company-name">
-
-                {{ $invoice->company->name }}
-
-            </div>
-
-            @if($invoice->company->postal_code)
-            〒{{ $invoice->company->postal_code }}<br>
-            @endif
-
-            {{ $invoice->company->address }}<br>
-
-            TEL：{{ $invoice->company->tel }}<br>
-
-            @if($invoice->company->fax)
-            FAX：{{ $invoice->company->fax }}<br>
-            @endif
-
-            @if($invoice->company->email)
-            {{ $invoice->company->email }}<br>
-            @endif
-
-            @if($invoice->company->registration_number)
-
-            <span class="small">
-                登録番号：{{ $invoice->company->registration_number }}
-            </span>
-
-            @endif
-
-        </td>
-
-    </tr>
-
-</table>
-
-
-{{-- 請求情報 --}}
-<table class="meta-table">
-
-    <tr>
-
-        <th>
-            請求書番号
-        </th>
-
-        <td>
-            {{ $invoice->invoice_no }}
-        </td>
-
-        <th>
-            請求日
-        </th>
-
-        <td>
-            {{ optional($invoice->invoice_date)->format('Y年m月d日') }}
-        </td>
-
-    </tr>
-
-    <tr>
-
-        <th>
-            支払期限
-        </th>
-
-        <td>
-            {{ optional($invoice->payment_due)->format('Y年m月d日') }}
-        </td>
-
-        <th>
-            件名
-        </th>
-
-        <td>
-            {{ $invoice->title }}
-        </td>
-
-    </tr>
-
-</table>
-
-
-{{-- 現場 --}}
-@if($invoice->site)
-
-<table class="meta-table">
-
-    <tr>
-
-        <th>
-            現場名
-        </th>
-
-        <td>
-            {{ $invoice->site->name }}
-        </td>
-
-    </tr>
-
-</table>
-
-@endif
-
-
-{{-- 合計金額 --}}
-<div class="total-area">
-
-    <div class="total-label">
-        ご請求金額
+    {{-- =========================
+         タイトル
+    ========================= --}}
+    <div class="invoice-title">
+        請求書
     </div>
 
-    <div class="total-price">
-        ￥{{ number_format($invoice->total) }}
-    </div>
 
-</div>
-
-
-{{-- 明細 --}}
-<div class="section-title">
-    請求明細
-</div>
-
-<table class="details">
-
-    <thead>
-
+    {{-- =========================
+         宛先・発行者
+    ========================= --}}
+    <table class="header-table">
         <tr>
 
-            <th width="12%">
-                品番
-            </th>
+            {{-- 宛先 --}}
+            <td class="client-area">
 
-            <th width="38%">
-                品名
-            </th>
+                <div class="client-label">
+                    請求先
+                </div>
 
-            <th width="10%">
-                数量
-            </th>
+                <div class="client-name">
+                    {{ $invoice->client->name ?? '' }} 御中
+                </div>
 
-            <th width="10%">
-                単位
-            </th>
-
-            <th width="15%">
-                単価
-            </th>
-
-            <th width="15%">
-                金額
-            </th>
-
-        </tr>
-
-    </thead>
-
-    <tbody>
-
-        @forelse($invoice->details as $detail)
-
-        <tr>
-
-            <td class="center">
-                -
             </td>
 
-            <td>
-                {{ $detail->description }}
-            </td>
 
-            <td class="right">
-                {{ number_format($detail->quantity, 2) }}
-            </td>
+            {{-- 発行者 --}}
+            <td class="company-area">
 
-            <td class="center">
-                {{ $detail->unit }}
-            </td>
+                <div class="company-name">
+                    {{ $invoice->company->name ?? '' }}
+                </div>
 
-            <td class="right">
-                ￥{{ number_format($detail->unit_price) }}
-            </td>
+                <div class="company-info">
 
-            <td class="right">
-                ￥{{ number_format($detail->amount) }}
+                    @if(!empty($invoice->company->postal_code))
+                        〒{{ $invoice->company->postal_code }}<br>
+                    @endif
+
+                    {{ $invoice->company->address ?? '' }}<br>
+
+                    @if(!empty($invoice->company->tel))
+                        TEL：{{ $invoice->company->tel }}
+                    @endif
+
+                    @if(!empty($invoice->company->fax))
+                        &nbsp;&nbsp;
+                        FAX：{{ $invoice->company->fax }}
+                    @endif
+
+                    @if(!empty($invoice->company->email))
+                        <br>
+                        {{ $invoice->company->email }}
+                    @endif
+
+                </div>
+
+                @if(!empty($invoice->company->registration_number))
+                    <div class="registration-number">
+                        登録番号：{{ $invoice->company->registration_number }}
+                    </div>
+                @endif
+
             </td>
 
         </tr>
-
-        @empty
-
-        <tr>
-
-            <td colspan="6" class="center">
-                明細なし
-            </td>
-
-        </tr>
-
-        @endforelse
-
-    </tbody>
-
-</table>
+    </table>
 
 
-{{-- 金額 --}}
-<div class="subtotal-area">
-
-    <table>
+    {{-- =========================
+         請求日・支払期限
+    ========================= --}}
+    <table class="invoice-info-table">
 
         <tr>
 
             <th>
-                小計
+                請求日
             </th>
 
             <td>
-                ￥{{ number_format($invoice->subtotal) }}
+                {{ $invoice->invoice_date?->format('Y年m月d日') }}
             </td>
 
-        </tr>
-
-        <tr>
-
             <th>
-                消費税
+                支払期限
             </th>
 
             <td>
-                ￥{{ number_format($invoice->tax) }}
-            </td>
-
-        </tr>
-
-        <tr>
-
-            <th>
-                合計
-            </th>
-
-            <td>
-                <strong>
-                    ￥{{ number_format($invoice->total) }}
-                </strong>
+                {{ $invoice->payment_due?->format('Y年m月d日') }}
             </td>
 
         </tr>
 
     </table>
 
-</div>
 
+    {{-- =========================
+         請求金額
+    ========================= --}}
+    <div class="total-box">
 
-{{-- 振込先 --}}
-<div class="bank-area">
+        <table style="width:100%; border-collapse:collapse;">
+            <tr>
 
-    <div class="section-title">
-        お振込先
+                <td class="total-label">
+                    ご請求金額
+                </td>
+
+                <td class="total-price">
+                    ¥{{ number_format($invoice->total) }}
+                </td>
+
+            </tr>
+        </table>
+
     </div>
 
-    <table class="bank-table">
+
+    {{-- =========================
+         明細
+    ========================= --}}
+    <div class="section-title">
+        明細
+    </div>
+
+    <table class="details">
+
+        <thead>
+
+            <tr>
+
+                <th class="site-col">
+                    現場名
+                </th>
+
+                <th class="name-col">
+                    品名
+                </th>
+
+                <th class="quantity-col">
+                    数量
+                </th>
+
+                <th class="unit-col">
+                    単位
+                </th>
+
+                <th class="tax-col">
+                    税率
+                </th>
+
+                <th class="unit-price-col">
+                    単価
+                </th>
+
+                <th class="amount-col">
+                    金額
+                </th>
+
+            </tr>
+
+        </thead>
+
+        <tbody>
+
+            @foreach($invoice->details as $detail)
+
+                <tr>
+
+                    {{-- 現場名 --}}
+                    <td>
+                        {{ $detail->site->name ?? '-' }}
+                    </td>
+
+                    {{-- 品名 --}}
+                    <td>
+                        {{ $detail->description }}
+                    </td>
+
+                    {{-- 数量 --}}
+                    <td class="center">
+                        {{ rtrim(rtrim(number_format($detail->quantity, 2), '0'), '.') }}
+                    </td>
+
+                    {{-- 単位 --}}
+                    <td class="center">
+                        {{ $detail->unit ?? '-' }}
+                    </td>
+
+                    {{-- 税率 --}}
+                    <td class="center nowrap">
+
+                        @if($detail->tax_type === 'taxable')
+                            10%
+                        @else
+                            非課税
+                        @endif
+
+                    </td>
+
+                    {{-- 単価 --}}
+                    <td class="right">
+                        ¥{{ number_format($detail->unit_price) }}
+                    </td>
+
+                    {{-- 金額 --}}
+                    <td class="right">
+                        ¥{{ number_format($detail->amount) }}
+                    </td>
+
+                </tr>
+
+            @endforeach
+
+        </tbody>
+
+    </table>
+
+
+    {{-- =========================
+         集計
+    ========================= --}}
+    <div class="summary-area">
+
+        <table>
+
+            <tr>
+
+                <th>
+                    小計
+                </th>
+
+                <td>
+                    ¥{{ number_format($invoice->subtotal) }}
+                </td>
+
+            </tr>
+
+            <tr>
+
+                <th>
+                    消費税
+                </th>
+
+                <td>
+                    ¥{{ number_format($invoice->tax) }}
+                </td>
+
+            </tr>
+
+            <tr class="summary-total">
+
+                <th>
+                    合計
+                </th>
+
+                <td>
+                    ¥{{ number_format($invoice->total) }}
+                </td>
+
+            </tr>
+
+        </table>
+
+    </div>
+
+
+    {{-- =========================
+         振込先・備考
+    ========================= --}}
+    <table class="bottom-table">
 
         <tr>
 
-            <th>
-                銀行名
-            </th>
+            {{-- 振込先 --}}
+            <td class="bank-area">
 
-            <td>
-                {{ $invoice->company->bank_name }}
+                <div class="section-title">
+                    お振込先
+                </div>
+
+                <table class="bank-table">
+
+                    @if(!empty($invoice->company->bank_name))
+                        <tr>
+                            <th>銀行名</th>
+                            <td>{{ $invoice->company->bank_name }}</td>
+                        </tr>
+                    @endif
+
+                    @if(!empty($invoice->company->bank_branch_name))
+                        <tr>
+                            <th>支店名</th>
+                            <td>{{ $invoice->company->bank_branch_name }}</td>
+                        </tr>
+                    @endif
+
+                    @if(!empty($invoice->company->bank_account_type))
+                        <tr>
+                            <th>口座種別</th>
+                            <td>{{ $invoice->company->bank_account_type }}</td>
+                        </tr>
+                    @endif
+
+                    @if(!empty($invoice->company->bank_account_number))
+                        <tr>
+                            <th>口座番号</th>
+                            <td>{{ $invoice->company->bank_account_number }}</td>
+                        </tr>
+                    @endif
+
+                    @if(!empty($invoice->company->bank_account_name))
+                        <tr>
+                            <th>口座名義</th>
+                            <td>{{ $invoice->company->bank_account_name }}</td>
+                        </tr>
+                    @endif
+
+                </table>
+
             </td>
 
-        </tr>
 
-        <tr>
+            {{-- 備考 --}}
+            <td class="remarks-area">
 
-            <th>
-                支店名
-            </th>
+                <div class="section-title">
+                    備考
+                </div>
 
-            <td>
-                {{ $invoice->company->branch_name }}
-            </td>
+                <div class="remarks-box">
 
-        </tr>
+                    @if(!empty($invoice->remarks))
+                        {!! nl2br(e($invoice->remarks)) !!}
+                    @endif
 
-        <tr>
+                </div>
 
-            <th>
-                口座種別
-            </th>
-
-            <td>
-                {{ $invoice->company->account_type }}
-            </td>
-
-        </tr>
-
-        <tr>
-
-            <th>
-                口座番号
-            </th>
-
-            <td>
-                {{ $invoice->company->account_number }}
-            </td>
-
-        </tr>
-
-        <tr>
-
-            <th>
-                口座名義
-            </th>
-
-            <td>
-                {{ $invoice->company->account_name }}
             </td>
 
         </tr>
 
     </table>
-
-</div>
-
-
-{{-- 備考 --}}
-<div class="remarks">
-
-    <div class="section-title">
-        備考
-    </div>
-
-    <div class="remarks-box">
-
-        {!! nl2br(e($invoice->remarks)) !!}
-
-    </div>
 
 </div>
 
 @endsection
+
