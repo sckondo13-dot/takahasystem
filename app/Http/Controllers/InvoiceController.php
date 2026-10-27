@@ -496,18 +496,228 @@ class InvoiceController extends Controller
     }
 
 
-    public function edit(string $id)
+    /**
+     * 請求書編集
+     */
+    public function edit(Invoice $invoice)
     {
-        //
+        $invoice->load([
+            'client',
+            'details.site',
+            'details.workType',
+        ]);
+
+        $clients = Client::orderBy('name')->get();
+
+        // 請求月は請求日の年月を初期値にする
+        $invoiceMonth = Carbon::parse($invoice->invoice_date)
+            ->format('Y-m');
+
+        // 既存の送付状情報が保存されている場合に備え、
+        // 後からデータを渡せるようにしておく
+        $coverLetters = [];
+
+        return view('invoices.edit', compact(
+            'invoice',
+            'clients',
+            'invoiceMonth',
+            'coverLetters'
+        ));
     }
 
-    public function update(Request $request, string $id)
+
+    /**
+     * 請求書更新
+     */
+    public function update(Request $request, Invoice $invoice)
     {
-        //
+        $validated = $request->validate([
+            'client_id' => [
+                'required',
+                'exists:clients,id',
+            ],
+
+            'month' => [
+                'required',
+                'date_format:Y-m',
+            ],
+
+            'invoice_date' => [
+                'required',
+                'date',
+            ],
+
+            'payment_due' => [
+                'required',
+                'date',
+            ],
+
+            'title' => [
+                'nullable',
+                'string',
+                'max:255',
+            ],
+
+            'remarks' => [
+                'nullable',
+                'string',
+            ],
+
+            'details' => [
+                'required',
+                'array',
+                'min:1',
+            ],
+
+            'details.*.description' => [
+                'required',
+                'string',
+                'max:255',
+            ],
+
+            'details.*.quantity' => [
+                'required',
+                'numeric',
+                'min:0',
+            ],
+
+            'details.*.unit' => [
+                'nullable',
+                'string',
+                'max:50',
+            ],
+
+            'details.*.tax_type' => [
+                'required',
+                Rule::in(['taxable', 'exempt']),
+            ],
+
+            'details.*.unit_price' => [
+                'required',
+                'numeric',
+                'min:0',
+            ],
+
+            'details.*.site_id' => [
+                'nullable',
+                'exists:sites,id',
+            ],
+
+            'details.*.work_type_id' => [
+                'nullable',
+                'exists:work_types,id',
+            ],
+
+            'details.*.source_type' => [
+                'nullable',
+                'string',
+                'max:50',
+            ],
+
+            'details.*.progress_rate' => [
+                'nullable',
+                'numeric',
+                'min:0',
+                'max:100',
+            ],
+
+            'details.*.remaining_rate' => [
+                'nullable',
+                'numeric',
+                'min:0',
+                'max:100',
+            ],
+        ]);
+
+        DB::transaction(function () use ($validated, $invoice) {
+            $taxableTotal = 0;
+            $exemptTotal = 0;
+
+            $preparedDetails = [];
+
+            foreach ($validated['details'] as $index => $detail) {
+                $quantity = (float) $detail['quantity'];
+                $unitPrice = (float) $detail['unit_price'];
+
+                $amount = (int) round($quantity * $unitPrice);
+
+                if ($detail['tax_type'] === 'taxable') {
+                    $taxableTotal += $amount;
+                } else {
+                    $exemptTotal += $amount;
+                }
+
+                $preparedDetails[] = [
+                    'site_id' => $detail['site_id'] ?? null,
+                    'work_type_id' => $detail['work_type_id'] ?? null,
+                    'description' => $detail['description'],
+                    'quantity' => $quantity,
+                    'unit' => $detail['unit'] ?? null,
+                    'tax_type' => $detail['tax_type'],
+                    'unit_price' => $unitPrice,
+                    'amount' => $amount,
+                    'sort_order' => $index + 1,
+                    'source_type' => $detail['source_type'] ?? 'manual',
+                    'progress_rate' => $detail['progress_rate'] ?? null,
+                    'remaining_rate' => $detail['remaining_rate'] ?? null,
+                ];
+            }
+
+            $tax = (int) floor($taxableTotal * 0.10);
+            $total = $taxableTotal + $exemptTotal + $tax;
+
+            // 既存の請求番号・会社・請求書種別・ステータスは維持
+            $invoice->update([
+                'client_id' => $validated['client_id'],
+                'site_id' => null,
+                'title' => $validated['title'] ?? '請求書',
+                'invoice_date' => $validated['invoice_date'],
+                'payment_due' => $validated['payment_due'],
+                'subtotal' => $taxableTotal + $exemptTotal,
+                'tax' => $tax,
+                'total' => $total,
+                'remarks' => $validated['remarks'] ?? null,
+            ]);
+
+            // 古い明細を削除して、編集後の明細を登録し直す
+            $invoice->details()->delete();
+
+            foreach ($preparedDetails as $detail) {
+                $invoice->details()->create($detail);
+            }
+
+            // 請負現場の残率を更新
+            foreach ($preparedDetails as $detail) {
+                if (
+                    !empty($detail['site_id']) &&
+                    $detail['remaining_rate'] !== null
+                ) {
+                    Site::where('id', $detail['site_id'])
+                        ->update([
+                            'remaining_rate' => $detail['remaining_rate'],
+                        ]);
+                }
+            }
+        });
+
+        return redirect()
+            ->route('invoices.show', $invoice)
+            ->with('success', '請求書を更新しました');
     }
 
-    public function destroy(string $id)
+
+    /**
+     * 請求書削除
+     */
+    public function destroy(Invoice $invoice)
     {
-        //
+        DB::transaction(function () use ($invoice) {
+            $invoice->details()->delete();
+            $invoice->delete();
+        });
+
+        return redirect()
+            ->route('invoices.index')
+            ->with('success', '請求書を削除しました');
     }
 }
