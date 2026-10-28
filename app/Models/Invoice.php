@@ -23,6 +23,7 @@ class Invoice extends Model
         'total',
         'remarks',
         'status',
+        'send_cover_letter',
     ];
 
     protected $casts = [
@@ -59,5 +60,12 @@ class Invoice extends Model
             DailyReport::class,
             'invoice_daily_reports'
         );
+    }
+    
+    public function coverLetters(): \Illuminate\Database\Eloquent\Relations\HasMany
+    {
+        return $this->hasMany(InvoiceCoverLetter::class)
+            ->orderBy('sort_order')
+            ->orderBy('id');
     }
 }

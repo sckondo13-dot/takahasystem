@@ -194,11 +194,15 @@ class InvoiceController extends Controller
                 'min:0',
                 'max:100',
             ],
+            'send_cover_letter' => ['required', 'in:yes,no'],
+            'cover_letters' => ['nullable', 'array'],
+            'cover_letters.*' => ['nullable', 'string', 'max:255'],
         ]);
 
         $company = Company::firstOrFail();
 
         $invoice = DB::transaction(function () use (
+            $request,
             $validated,
             $company
         ) {
@@ -312,6 +316,9 @@ class InvoiceController extends Controller
                         ]);
                 }
             }
+
+            // 送付状の設定と書類名を保存
+            $this->saveCoverLetters($request, $invoice);
 
             return $invoice;
         });
@@ -505,6 +512,7 @@ class InvoiceController extends Controller
             'client',
             'details.site',
             'details.workType',
+            'coverLetters',
         ]);
 
         $clients = Client::orderBy('name')->get();
@@ -627,9 +635,12 @@ class InvoiceController extends Controller
                 'min:0',
                 'max:100',
             ],
+            'send_cover_letter' => ['required', 'in:yes,no'],
+            'cover_letters' => ['nullable', 'array'],
+            'cover_letters.*' => ['nullable', 'string', 'max:255'],
         ]);
 
-        DB::transaction(function () use ($validated, $invoice) {
+        DB::transaction(function () use ($request, $validated, $invoice) {
             $taxableTotal = 0;
             $exemptTotal = 0;
 
@@ -698,12 +709,51 @@ class InvoiceController extends Controller
                         ]);
                 }
             }
+            // 送付状の設定と書類名を保存
+            $this->saveCoverLetters($request, $invoice);
         });
 
         return redirect()
             ->route('invoices.show', $invoice)
             ->with('success', '請求書を更新しました');
     }
+
+
+    /**
+     * 送付状の設定と書類名を保存する
+     */
+    private function saveCoverLetters(
+        \Illuminate\Http\Request $request,
+        \App\Models\Invoice $invoice
+    ): void {
+        // いったん既存の書類名を削除
+        $invoice->coverLetters()->delete();
+
+        // 送付状を作成しない場合
+        if ($request->input('send_cover_letter') !== 'yes') {
+            $invoice->send_cover_letter = false;
+            $invoice->save();
+
+            return;
+        }
+
+        // 送付状を作成する場合
+        $invoice->send_cover_letter = true;
+        $invoice->save();
+
+        $names = collect($request->input('cover_letters', []))
+            ->map(fn($name) => trim((string) $name))
+            ->filter(fn($name) => $name !== '')
+            ->values();
+
+        foreach ($names as $index => $name) {
+            $invoice->coverLetters()->create([
+                'name' => $name,
+                'sort_order' => $index,
+            ]);
+        }
+    }
+
 
 
     /**
