@@ -24,6 +24,9 @@
                     <x-dropdown-link :href="route('site-reports.niseko')">
                         ニセコ明細
                     </x-dropdown-link>
+                    <x-dropdown-link :href="route('site-reports.truck')">
+                        トラック明細
+                    </x-dropdown-link>
                     <x-dropdown-link :href="route('invoices.index')">
                         請求書
                     </x-dropdown-link>

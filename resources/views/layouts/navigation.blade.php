@@ -24,6 +24,9 @@
                     <x-nav-link :href="route('site-reports.monthly')">
                         {{ __('現場明細') }}
                     </x-nav-link>
+                    <x-nav-link :href="route('site-reports.truck')">
+                        {{ __('トラック明細') }}
+                    </x-nav-link>
                     <x-nav-link :href="route('site-reports.niseko')">
                         {{ __('ニセコ明細') }}
                     </x-nav-link>

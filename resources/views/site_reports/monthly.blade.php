@@ -9,7 +9,7 @@
         <div class="bg-white border rounded p-5 mb-5">
             <div class="flex flex-wrap justify-between items-end gap-4">
 
-                <form class="flex flex-wrap gap-3 items-end">
+                <form method="GET" class="flex flex-wrap gap-3 items-end">
                     <div>
                         <label class="block mb-1">
                             月

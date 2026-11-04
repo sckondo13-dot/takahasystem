@@ -9,6 +9,7 @@ use Illuminate\Http\Request;
 use App\Services\Pdf\SiteMonthlyPdfService;
 use App\Services\Pdf\NisekoMonthlyPdfService;
 use App\Models\Client;
+use App\Services\Pdf\TruckMonthlyPdfService;
 
 class SiteReportController extends Controller
 {
@@ -110,6 +111,14 @@ class SiteReportController extends Controller
         );
     }
 
+    public function truck(Request $request)
+    {
+        return view(
+            'site_reports.truck',
+            $this->getTruckData($request)
+        );
+    }
+
     public function nisekoPdf(
         Request $request,
         NisekoMonthlyPdfService $pdf
@@ -128,15 +137,37 @@ class SiteReportController extends Controller
         );
     }
 
+    public function truckPdf(
+        Request $request,
+        TruckMonthlyPdfService $pdf
+    ) {
+        return $pdf->preview(
+            $this->getTruckData($request)
+        );
+    }
+
+    public function truckDownload(
+        Request $request,
+        TruckMonthlyPdfService $pdf
+    ) {
+        return $pdf->downloadPdf(
+            $this->getTruckData($request)
+        );
+    }
+
     private function getMonthlyReportData(Request $request)
     {
-        $sites = Site::orderBy('name')->get();
 
-        $siteId = $request->site_id;
 
         $month = $request->month
             ? Carbon::parse($request->month . '-01')
             : now();
+
+        $sites = Site::activeOn($month)
+            ->orderBy('name')
+            ->get();
+
+        $siteId = $request->site_id;
 
         $start = $month->copy()->startOfMonth();
         $end   = $month->copy()->endOfMonth();
@@ -484,6 +515,197 @@ class SiteReportController extends Controller
 
             'totalTransportation' => $totalTransportation,
 
+        ];
+    }
+
+
+    private function getTruckData(Request $request)
+    {
+        if (!$request->filled('month')) {
+            return [
+                'month' => now(),
+                'visibleSites' => collect(),
+                'rows' => [],
+                'siteTotals' => [],
+                'totalManHours' => 0,
+                'totalSales' => 0,
+                'totalTransportation' => 0,
+                'showTable' => false,
+            ];
+        }
+
+        $month = Carbon::parse($request->month . '-01');
+
+        $start = $month->copy()->startOfMonth();
+        $end = $month->copy()->endOfMonth();
+
+        /*
+    |--------------------------------------------------------------------------
+    | 北海道リサイクラーのトラック現場
+    |--------------------------------------------------------------------------
+    */
+
+        $sites = Site::where('name', 'like', '%(トラック)%')
+            ->whereHas('client', function ($query) {
+                $query->where(
+                    'name',
+                    'like',
+                    '%北海道リサイクラー%'
+                );
+            })
+            ->activeOn($month)
+            ->with('client')
+            ->orderBy('name')
+            ->get();
+
+        /*
+    |--------------------------------------------------------------------------
+    | 日報取得
+    |--------------------------------------------------------------------------
+    */
+
+        $reports = DailyReport::with([
+            'site.client',
+            'details.workType',
+        ])
+            ->whereBetween('work_date', [$start, $end])
+            ->whereIn('site_id', $sites->pluck('id'))
+            ->orderBy('work_date')
+            ->get();
+
+        /*
+    |--------------------------------------------------------------------------
+    | 日付一覧
+    |--------------------------------------------------------------------------
+    */
+
+        $dates = collect();
+
+        for ($date = $start->copy(); $date <= $end; $date->addDay()) {
+            $dates->push($date->copy());
+        }
+
+        /*
+    |--------------------------------------------------------------------------
+    | 初期化
+    |--------------------------------------------------------------------------
+    */
+
+        $rows = [];
+        $siteTotals = [];
+
+        foreach ($sites as $site) {
+            $siteTotals[$site->id] = 0;
+        }
+
+        $totalManHours = 0;
+        $totalSales = 0;
+        $totalExpressway = 0;
+        $totalOvertime = 0;
+
+        /*
+    |--------------------------------------------------------------------------
+    | 日付ごとの集計
+    |--------------------------------------------------------------------------
+    */
+
+        foreach ($dates as $date) {
+
+            $dateKey = $date->format('Y-m-d');
+
+            $dayReports = $reports->filter(function ($report) use ($dateKey) {
+                return $report->work_date->format('Y-m-d') === $dateKey;
+            });
+
+            $row = [
+                'date' => $date,
+                'sites' => [],
+                'total_man' => 0,
+                'sales' => 0,
+                'expressway' => 0,
+                'overtime' => 0,
+            ];
+
+            foreach ($dayReports as $report) {
+
+                // トラックの作業だけを抽出
+                $truckDetails = $report->details->filter(function ($detail) {
+                    return $detail->workType
+                        && $detail->workType->name === 'トラック';
+                });
+
+                $man = $truckDetails->sum('man_hours');
+
+                $sales = $truckDetails->sum('sales');
+
+                $expressway = $truckDetails->sum(
+                    'expressway_cost'
+                );
+
+                $overtime = $truckDetails->sum(
+                    'overtime_hours'
+                );
+
+                if (
+                    $man <= 0 &&
+                    $sales <= 0 &&
+                    $expressway <= 0 &&
+                    $overtime <= 0
+                ) {
+                    continue;
+                }
+
+                $row['sites'][$report->site_id] = [
+                    'man' => $man,
+                    'sales' => $sales,
+                    'expressway' => $expressway,
+                    'overtime' => $overtime,
+                ];
+
+                $row['total_man'] += $man;
+                $row['sales'] += $sales;
+                $row['expressway'] += $expressway;
+                $row['overtime'] += $overtime;
+
+                $siteTotals[$report->site_id] += $man;
+
+                $totalManHours += $man;
+                $totalSales += $sales;
+                $totalExpressway += $expressway;
+                $totalOvertime += $overtime;
+            }
+
+            $rows[] = $row;
+        }
+
+        /*
+    |--------------------------------------------------------------------------
+    | 作業実績がある現場だけ表示
+    |--------------------------------------------------------------------------
+    */
+
+        $visibleSites = $sites->filter(function ($site) use ($rows) {
+
+            foreach ($rows as $row) {
+
+                if (isset($row['sites'][$site->id])) {
+                    return true;
+                }
+            }
+
+            return false;
+        })->values();
+
+        return [
+            'showTable' => true,
+            'month' => $month,
+            'visibleSites' => $visibleSites,
+            'rows' => $rows,
+            'siteTotals' => $siteTotals,
+            'totalManHours' => $totalManHours,
+            'totalSales' => $totalSales,
+            'totalExpressway' => $totalExpressway,
+            'totalOvertime' => $totalOvertime,
         ];
     }
 }

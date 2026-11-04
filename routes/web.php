@@ -82,6 +82,9 @@ Route::middleware('auth')->group(function () {
         [SiteReportController::class, 'niseko']
     )->name('site-reports.niseko');
 
+    Route::get('/site-reports/truck', [SiteReportController::class, 'truck'])
+        ->name('site-reports.truck');
+
     Route::get(
         '/site-reports/niseko/pdf',
         [SiteReportController::class, 'nisekoPdf']
@@ -91,6 +94,12 @@ Route::middleware('auth')->group(function () {
         '/site-reports/niseko/download',
         [SiteReportController::class, 'nisekoDownload']
     )->name('site-reports.niseko.download');
+
+    Route::get('/site-reports/truck/pdf', [SiteReportController::class, 'truckPdf'])
+        ->name('site-reports.truck.pdf');
+
+    Route::get('/site-reports/truck/download', [SiteReportController::class, 'truckDownload'])
+        ->name('site-reports.truck.download');
 
     Route::get(
         '/subcontractor-attendance',
