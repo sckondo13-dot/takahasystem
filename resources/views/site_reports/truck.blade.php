@@ -132,7 +132,7 @@
 
                             @if(isset($row['sites'][$site->id]))
 
-                            {{ number_format($row['sites'][$site->id]['man']) }}
+                            {{ number_format($row['sites'][$site->id]['man'], 1) }}
 
                             @endif
 
@@ -142,7 +142,7 @@
 
                         <td class="border p-2 text-center font-bold">
 
-                            {{ number_format($row['total_man']) }}
+                            {{ number_format($row['total_man'], 1) }}
 
                         </td>
 
@@ -189,7 +189,7 @@
 
                         <td class="border p-2 text-center">
 
-                            {{ number_format($siteTotals[$site->id] ?? 0) }}
+                            {{ number_format($siteTotals[$site->id] ?? 0, 1) }}
 
                         </td>
 
@@ -197,7 +197,7 @@
 
                         <td class="border p-2 text-center">
 
-                            {{ number_format($totalManHours) }}
+                            {{ number_format($totalManHours, 1) }}
 
                         </td>
 
