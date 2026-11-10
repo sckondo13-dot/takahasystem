@@ -105,4 +105,9 @@ class Site extends Model
     {
         return $this->hasMany(Invoice::class);
     }
+
+    public function monthlyUnitPrices(): HasMany
+    {
+        return $this->hasMany(SiteMonthlyUnitPrice::class);
+    }
 }

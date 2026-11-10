@@ -13,6 +13,8 @@ use App\Models\DailyReportItem;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Carbon\Carbon;
+use App\Models\ClientMonthlyUnitPrice;
+use App\Models\SiteMonthlyUnitPrice;
 
 class DailyReportController extends Controller
 {
@@ -640,8 +642,7 @@ class DailyReportController extends Controller
         $duplicateWorkers = [];
 
         $dailyReport->load('site.client');
-
-        $client = $dailyReport->site->client;
+        $site = $dailyReport->site;
 
         foreach ($request->worker ?? [] as $index => $worker) {
 
@@ -727,7 +728,7 @@ class DailyReportController extends Controller
             $this->createDetail(
                 $request,
                 $dailyReport,
-                $client,
+                $site,
                 $employeeId,
                 $subcontractorId,
                 $index
@@ -842,7 +843,7 @@ class DailyReportController extends Controller
             $editingDailyReport &&
             $editingDailyReport->site_id == $request->site_id &&
             $editingDailyReport->work_date->format('Y-m-d')
-                === Carbon::parse($request->work_date)->format('Y-m-d')
+            === Carbon::parse($request->work_date)->format('Y-m-d')
         ) {
 
             $dailyReport = $editingDailyReport;
@@ -909,10 +910,10 @@ class DailyReportController extends Controller
             $formSubcontractors[] = [
 
                 'subcontractor_id' =>
-                    $subcontractorId,
+                $subcontractorId,
 
                 'work_type_id' =>
-                    (int) $workTypeId,
+                (int) $workTypeId,
 
                 'index' => $index,
             ];
@@ -986,7 +987,7 @@ class DailyReportController extends Controller
 
         $grouped =
             collect($formSubcontractors)
-                ->groupBy('subcontractor_id');
+            ->groupBy('subcontractor_id');
 
         foreach ($grouped as $subcontractorId => $rows) {
 
@@ -998,9 +999,9 @@ class DailyReportController extends Controller
 
             $workTypeIds =
                 $rows
-                    ->pluck('work_type_id')
-                    ->unique()
-                    ->values();
+                ->pluck('work_type_id')
+                ->unique()
+                ->values();
 
             /*
             |--------------------------------------------------------------------------
@@ -1043,17 +1044,17 @@ class DailyReportController extends Controller
                 'type' => 'form',
 
                 'subcontractor_id' =>
-                    $subcontractorId,
+                $subcontractorId,
 
                 'subcontractor_name' =>
-                    $subcontractor?->name
+                $subcontractor?->name
                     ?? '下請会社',
 
                 'existing_work_type' =>
-                    $workTypeNames->implode('、'),
+                $workTypeNames->implode('、'),
 
                 'new_work_type' =>
-                    '複数の作業内容',
+                '複数の作業内容',
 
             ];
         }
@@ -1095,18 +1096,18 @@ class DailyReportController extends Controller
             'type' => 'database',
 
             'subcontractor_id' =>
-                $subcontractor?->id,
+            $subcontractor?->id,
 
             'subcontractor_name' =>
-                $subcontractor?->name
+            $subcontractor?->name
                 ?? '下請会社',
 
             'existing_work_type' =>
-                $existingWorkType?->name
+            $existingWorkType?->name
                 ?? '作業内容不明',
 
             'new_work_type' =>
-                $newWorkType?->name
+            $newWorkType?->name
                 ?? '作業内容不明',
         ];
     }
@@ -1117,67 +1118,23 @@ class DailyReportController extends Controller
     private function createDetail(
         Request $request,
         DailyReport $dailyReport,
-        $client,
+        $site,
         $employeeId,
         $subcontractorId,
         $index
     ) {
+        $attendance = $this->findAttendance($request, $index);
+        $workType = WorkType::findOrFail($request->work_type_id[$index]);
 
-        /*
-        |--------------------------------------------------------------------------
-        | 勤務区分
-        |--------------------------------------------------------------------------
-        */
-
-        $attendance = $this->findAttendance(
-            $request,
-            $index
-        );
-
-        /*
-        |--------------------------------------------------------------------------
-        | 作業内容
-        |--------------------------------------------------------------------------
-        */
-
-        $workType = WorkType::find(
-            $request->work_type_id[$index]
-        );
-
-        /*
-        |--------------------------------------------------------------------------
-        | 単価
-        |--------------------------------------------------------------------------
-        */
-
+        // 日報の日付・現場・作業種別に対応する単価を取得
         $unitPrice = $this->getUnitPrice(
-            $client,
-            $workType
+            $site,
+            $workType,
+            $dailyReport->work_date
         );
 
-        /*
-        |--------------------------------------------------------------------------
-        | 人工
-        |--------------------------------------------------------------------------
-        */
-
-        $manHours =
-            $request->man_hours[$index] ?? 0;
-
-        /*
-        |--------------------------------------------------------------------------
-        | 残業
-        |--------------------------------------------------------------------------
-        */
-
-        $overtimeHours =
-            $request->overtime_hours[$index] ?? 0;
-
-        /*
-        |--------------------------------------------------------------------------
-        | 売上
-        |--------------------------------------------------------------------------
-        */
+        $manHours = (float) $request->man_hours[$index];
+        $overtimeHours = (float) ($request->overtime_hours[$index] ?? 0);
 
         $sales = $this->calculateSales(
             $unitPrice,
@@ -1185,55 +1142,21 @@ class DailyReportController extends Controller
             $overtimeHours
         );
 
-        /*
-        |--------------------------------------------------------------------------
-        | 保存
-        |--------------------------------------------------------------------------
-        */
-
         DailyReportDetail::create([
-
-            'daily_report_id' =>
-                $dailyReport->id,
-
-            'employee_id' =>
-                $employeeId,
-
-            'subcontractor_id' =>
-                $subcontractorId,
-
-            'work_type_id' =>
-                $request->work_type_id[$index],
-
-            'man_hours' =>
-                $manHours,
-
-            'overtime_hours' =>
-                $overtimeHours,
-
-            'transportation_cost' =>
-                $request->transportation_cost[$index] ?? 0,
-
-            'expressway_cost' =>
-                $request->expressway_cost[$index] ?? 0,
-
-            'parking_cost' =>
-                $request->parking_cost[$index] ?? 0,
-
-            'sales' =>
-                $sales,
-
-            'note' =>
-                $request->detail_note[$index] ?? null,
-
-            'attendance_time_name' =>
-                $attendance?->name,
-
-            'start_time' =>
-                $attendance?->start_time,
-
-            'end_time' =>
-                $attendance?->end_time,
+            'daily_report_id' => $dailyReport->id,
+            'employee_id' => $employeeId,
+            'subcontractor_id' => $subcontractorId,
+            'work_type_id' => $request->work_type_id[$index],
+            'man_hours' => $manHours,
+            'overtime_hours' => $overtimeHours,
+            'transportation_cost' => $request->transportation_cost[$index] ?? 0,
+            'expressway_cost' => $request->expressway_cost[$index] ?? 0,
+            'parking_cost' => $request->parking_cost[$index] ?? 0,
+            'sales' => $sales,
+            'note' => $request->detail_note[$index] ?? null,
+            'attendance_time_name' => $attendance?->name,
+            'start_time' => $attendance?->start_time,
+            'end_time' => $attendance?->end_time,
         ]);
     }
 
@@ -1260,20 +1183,20 @@ class DailyReportController extends Controller
             DailyReportItem::create([
 
                 'daily_report_id' =>
-                    $dailyReport->id,
+                $dailyReport->id,
 
                 'category' =>
-                    $request->item_category[$index]
+                $request->item_category[$index]
                     ?? '貸出',
 
                 'name' =>
-                    $name,
+                $name,
 
                 'quantity' =>
-                    $quantity,
+                $quantity,
 
                 'unit' =>
-                    $request->item_unit[$index]
+                $request->item_unit[$index]
                     ?? null,
 
                 'unit_price' => 0,
@@ -1281,7 +1204,7 @@ class DailyReportController extends Controller
                 'amount' => 0,
 
                 'note' =>
-                    $request->item_note[$index]
+                $request->item_note[$index]
                     ?? null,
             ]);
         }
@@ -1316,10 +1239,8 @@ class DailyReportController extends Controller
     ): ?AttendanceTime {
 
         if (
-            empty(
-                $request->attendance_time_id[$index]
-                ?? null
-            )
+            empty($request->attendance_time_id[$index]
+                ?? null)
         ) {
             return null;
         }
@@ -1333,35 +1254,52 @@ class DailyReportController extends Controller
      * 作業内容別単価
      */
     private function getUnitPrice(
-        $client,
-        WorkType $workType
+        Site $site,
+        WorkType $workType,
+        $workDate
     ): int {
+        $priceMonth = \Carbon\Carbon::parse($workDate)
+            ->startOfMonth()
+            ->toDateString();
 
-        return match ($workType->name) {
+        // ① 現場別の月別単価を優先
+        $sitePrice = SiteMonthlyUnitPrice::where('site_id', $site->id)
+            ->where('work_type_id', $workType->id)
+            ->whereDate('price_month', $priceMonth)
+            ->value('unit_price');
 
-            '解体工' =>
-                $client->demolition_unit_price,
+        if ($sitePrice !== null) {
+            return (int) $sitePrice;
+        }
 
-            '重機' =>
-                $client->heavy_equipment_unit_price,
+        // ② 元請の月別単価
+        $clientPrice = ClientMonthlyUnitPrice::where('client_id', $site->client_id)
+            ->where('work_type_id', $workType->id)
+            ->whereDate('price_month', $priceMonth)
+            ->value('unit_price');
 
-            '重機2' =>
-                $client->heavy_equipment2_unit_price,
+        if ($clientPrice !== null) {
+            return (int) $clientPrice;
+        }
 
-            'はつり' =>
-                $client->chipping_unit_price,
+        // ③ 月別単価がない場合は既存の元請基本単価
+        $basePriceColumns = [
+            '解体工' => 'demolition_unit_price',
+            '重機' => 'heavy_equipment_unit_price',
+            '重機2' => 'heavy_equipment2_unit_price',
+            'はつり' => 'chipping_unit_price',
+            '石綿' => 'asbestos_unit_price',
+            'トラック' => 'truck_unit_price',
+            'ユニック' => 'unic_unit_price',
+        ];
 
-            '石綿' =>
-                $client->asbestos_unit_price,
+        $column = $basePriceColumns[$workType->name] ?? null;
 
-            'トラック' =>
-                $client->truck_unit_price,
+        if (!$column) {
+            return 0;
+        }
 
-            'ユニック' =>
-                $client->unic_unit_price,
-
-            default => 0,
-        };
+        return (int) ($site->client->{$column} ?? 0);
     }
 
     /**

@@ -30,6 +30,9 @@
                     <x-dropdown-link :href="route('invoices.index')">
                         請求書
                     </x-dropdown-link>
+                    <x-dropdown-link :href="route('monthly-sales-recalculation.index')">
+                        単価再計算
+                    </x-dropdown-link>
                     <x-dropdown-link :href="route('sites.index')">
                         現場管理
                     </x-dropdown-link>

@@ -63,6 +63,12 @@
 
             @endforeach
 
+            <a
+                href="{{ route('clients.monthly-prices', $client) }}"
+                class="inline-block bg-green-600 hover:bg-green-600 text-white px-5 py-2 rounded">
+                月別単価を設定
+            </a>
+
             <button class="bg-blue-600 text-white px-5 py-2 rounded">
 
                 更新

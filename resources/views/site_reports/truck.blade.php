@@ -79,7 +79,7 @@
                             {{ $site->name }}
 
                             <div class="text-xs font-normal text-gray-600 mt-1">
-                                単価：{{ number_format($site->client->truck_unit_price ?? 0) }}円
+                                単価：{{ number_format($site->truck_unit_price_for_month ?? 0) }}円
                             </div>
 
                         </th>

@@ -10,6 +10,9 @@ use App\Services\Pdf\SiteMonthlyPdfService;
 use App\Services\Pdf\NisekoMonthlyPdfService;
 use App\Models\Client;
 use App\Services\Pdf\TruckMonthlyPdfService;
+use App\Models\WorkType;
+use App\Models\SiteMonthlyUnitPrice;
+use App\Models\ClientMonthlyUnitPrice;
 
 class SiteReportController extends Controller
 {
@@ -695,6 +698,53 @@ class SiteReportController extends Controller
 
             return false;
         })->values();
+
+        // 対象年月のトラック単価を取得
+        $priceMonth = \Carbon\Carbon::parse($month)
+            ->startOfMonth()
+            ->toDateString();
+
+        // トラックの作業種別ID
+        $truckWorkTypeId = WorkType::where('name', 'トラック')
+            ->value('id');
+
+        // 現場ごとに適用単価を設定
+        $visibleSites->each(function ($site) use ($priceMonth, $truckWorkTypeId) {
+
+            $site->loadMissing('client');
+
+            $client = $site->client;
+
+            if (!$client || !$truckWorkTypeId) {
+                $site->truck_unit_price_for_month = 0;
+                return;
+            }
+
+            // ① 現場別月別単価
+            $sitePrice = SiteMonthlyUnitPrice::where('site_id', $site->id)
+                ->where('work_type_id', $truckWorkTypeId)
+                ->whereDate('price_month', $priceMonth)
+                ->value('unit_price');
+
+            if ($sitePrice !== null) {
+                $site->truck_unit_price_for_month = $sitePrice;
+                return;
+            }
+
+            // ② 取引先別月別単価
+            $clientPrice = ClientMonthlyUnitPrice::where('client_id', $client->id)
+                ->where('work_type_id', $truckWorkTypeId)
+                ->whereDate('price_month', $priceMonth)
+                ->value('unit_price');
+
+            if ($clientPrice !== null) {
+                $site->truck_unit_price_for_month = $clientPrice;
+                return;
+            }
+
+            // ③ 取引先の基本単価
+            $site->truck_unit_price_for_month = $client->truck_unit_price ?? 0;
+        });
 
         return [
             'showTable' => true,

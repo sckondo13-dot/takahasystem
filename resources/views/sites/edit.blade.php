@@ -167,6 +167,12 @@
                     value="{{ optional($site->contract_end)->format('Y-m') }}">
             </div>
 
+            <a
+                href="{{ route('sites.monthly-prices', $site) }}"
+                class="inline-block bg-green-600 hover:bg-green-600 text-white px-5 py-2 rounded">
+                月別単価を設定
+            </a>
+
             <button class="bg-blue-600 hover:bg-blue-700 text-white px-5 py-2 rounded">
 
                 更新

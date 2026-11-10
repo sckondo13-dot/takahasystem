@@ -13,6 +13,7 @@ use App\Http\Controllers\AttendanceTimeController;
 use App\Http\Controllers\SiteReportController;
 use App\Http\Controllers\SubcontractorAttendanceController;
 use App\Http\Controllers\InvoiceController;
+use App\Http\Controllers\MonthlySalesRecalculationController;
 
 Route::redirect('/', '/login');
 
@@ -29,9 +30,21 @@ Route::middleware('auth')->group(function () {
 
     Route::resource('clients', ClientController::class);
 
+    Route::get('/clients/{client}/monthly-prices', [ClientController::class, 'monthlyPrices'])
+        ->name('clients.monthly-prices');
+
+    Route::post('/clients/{client}/monthly-prices', [ClientController::class, 'updateMonthlyPrices'])
+        ->name('clients.monthly-prices.update');
+
     Route::resource('subcontractors', SubcontractorController::class);
 
     Route::resource('sites', SiteController::class);
+
+    Route::get('/sites/{site}/monthly-prices', [SiteController::class, 'monthlyPrices'])
+        ->name('sites.monthly-prices');
+
+    Route::post('/sites/{site}/monthly-prices', [SiteController::class, 'updateMonthlyPrices'])
+        ->name('sites.monthly-prices.update');
 
     Route::get(
         '/daily-reports/employees-by-date',
@@ -133,6 +146,13 @@ Route::middleware('auth')->group(function () {
         ->name('invoices.site-details');
 
     Route::resource('invoices', InvoiceController::class);
+
+    // 月別売上の一括再計算
+    Route::get('/monthly-sales-recalculation', [MonthlySalesRecalculationController::class, 'index'])
+        ->name('monthly-sales-recalculation.index');
+
+    Route::post('/monthly-sales-recalculation', [MonthlySalesRecalculationController::class, 'store'])
+        ->name('monthly-sales-recalculation.store');
 });
 
 require __DIR__ . '/auth.php';

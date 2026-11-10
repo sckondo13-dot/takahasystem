@@ -67,8 +67,15 @@
                         <x-dropdown-link :href="route('site-reports.niseko')">
                             ニセコ明細
                         </x-dropdown-link>
+                        <x-dropdown-link :href="route('site-reports.truck')">
+                            トラック明細
+                        </x-dropdown-link>
+
                         <x-dropdown-link :href="route('invoices.index')">
                             請求書
+                        </x-dropdown-link>
+                        <x-dropdown-link :href="route('monthly-sales-recalculation.index')">
+                            単価再計算
                         </x-dropdown-link>
                         <x-dropdown-link :href="route('sites.index')">
                             現場管理
@@ -150,8 +157,14 @@
                 <x-responsive-nav-link :href="route('site-reports.niseko')">
                     ニセコ明細
                 </x-responsive-nav-link>
+                <x-responsive-nav-link :href="route('site-reports.truck')">
+                    トラック明細
+                </x-responsive-nav-link>
                 <x-responsive-nav-link :href="route('invoices.index')">
                     請求書
+                </x-responsive-nav-link>
+                <x-responsive-nav-link :href="route('monthly-sales-recalculation.index')">
+                    単価再計算
                 </x-responsive-nav-link>
                 <x-responsive-nav-link :href="route('sites.index')">
                     現場管理
