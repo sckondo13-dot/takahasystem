@@ -569,31 +569,31 @@
                     </tr>
                     @endif
 
-                    @if(!empty($invoice->company->bank_branch_name))
+                    @if(!empty($invoice->company->branch_name))
                     <tr>
                         <th>支店名</th>
-                        <td>{{ $invoice->company->bank_branch_name }}</td>
+                        <td>{{ $invoice->company->branch_name }}</td>
                     </tr>
                     @endif
 
-                    @if(!empty($invoice->company->bank_account_type))
+                    @if(!empty($invoice->company->account_type))
                     <tr>
                         <th>口座種別</th>
-                        <td>{{ $invoice->company->bank_account_type }}</td>
+                        <td>{{ $invoice->company->account_type }}</td>
                     </tr>
                     @endif
 
-                    @if(!empty($invoice->company->bank_account_number))
+                    @if(!empty($invoice->company->account_number))
                     <tr>
                         <th>口座番号</th>
-                        <td>{{ $invoice->company->bank_account_number }}</td>
+                        <td>{{ $invoice->company->account_number }}</td>
                     </tr>
                     @endif
 
-                    @if(!empty($invoice->company->bank_account_name))
+                    @if(!empty($invoice->company->account_name))
                     <tr>
                         <th>口座名義</th>
-                        <td>{{ $invoice->company->bank_account_name }}</td>
+                        <td>{{ $invoice->company->account_name }}</td>
                     </tr>
                     @endif
 
